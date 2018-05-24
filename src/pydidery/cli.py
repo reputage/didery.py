@@ -53,7 +53,7 @@ from ioflo.aid.consoling import VERBIAGE_NAMES
     default=VERBIAGE_NAMES[0],
     help='console output verbosity level'
 )
-def main(port, verbose):
+def main(consensus, config, data, verbose):
     projectDirpath = os.path.dirname(
         os.path.dirname(
             os.path.abspath(
@@ -79,4 +79,4 @@ def main(port, verbose):
                         verbose=verbose,
                         consolepath='',
                         statistics=False,
-                        preloads=[('.main.server.port', odict(value=port))])
+                        preloads=[('.main.server.port', odict(value=""))])

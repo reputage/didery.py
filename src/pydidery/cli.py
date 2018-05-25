@@ -35,7 +35,7 @@ from ioflo.aid.consoling import VERBIAGE_NAMES
     '--verbose',
     '-v',
     type=click.Choice(VERBIAGE_NAMES),
-    default=VERBIAGE_NAMES[2],
+    default=VERBIAGE_NAMES[0],
     help='verbosity level'
 )
 def main(port, verbose):
@@ -46,9 +46,8 @@ def main(port, verbose):
             )
         )
     )
-    floScriptpath = os.path.join(projectDirpath, "didery/flo/main.flo")
-
-    click.echo("MAIN")
+    floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
+    
     """ Main entry point for ioserve CLI"""
 
     verbose = VERBIAGE_NAMES.index(verbose)
@@ -58,7 +57,7 @@ def main(port, verbose):
                         real=True,
                         retro=True,
                         filepath=floScriptpath,
-                        behaviors=['didery.core'],
+                        behaviors=['pydidery.core'],
                         mode='',
                         username='',
                         password='',

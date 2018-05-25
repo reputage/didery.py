@@ -134,8 +134,8 @@ setup(
     ] if Cython else [],
     entry_points={
         'console_scripts': [
-            'py-dideryd = py-didery.app:main',
-            'py-didery = py-didery.cli:main',
+            'py-didery=pydidery.cli:main',
+            'py-dideryd=pydidery.app:main',
         ]
     },
     cmdclass={'build_ext': optional_build_ext},

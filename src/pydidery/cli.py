@@ -24,19 +24,34 @@ from ioflo.aid.consoling import VERBIAGE_NAMES
 
 @click.command()
 @click.option(
-    '--port',
-    '-p',
+    '--Consensus',
+    '-C',
     multiple=False,
-    default=8080,
-    type=click.IntRange(1, 65535),
-    help='port number the server should listen on'
+    default=50,
+    type=click.IntRange(0, 100),
+    help='threshold(%) at which consensus is reached'
+)
+@click.option(
+    '--config',
+    '-c',
+    multiple=False,
+    nargs=1,
+    help='specify config file path'
+)
+@click.option(
+    '--data',
+    '-d',
+    multiple=False,
+    nargs=1,
+    help='specify data file path'
 )
 @click.option(
     '--verbose',
     '-v',
+    multiple=False,
     type=click.Choice(VERBIAGE_NAMES),
     default=VERBIAGE_NAMES[0],
-    help='verbosity level'
+    help='console output verbosity level'
 )
 def main(port, verbose):
     projectDirpath = os.path.dirname(
@@ -47,7 +62,7 @@ def main(port, verbose):
         )
     )
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
-    
+
     """ Main entry point for ioserve CLI"""
 
     verbose = VERBIAGE_NAMES.index(verbose)

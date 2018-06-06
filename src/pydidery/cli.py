@@ -22,38 +22,49 @@ from ioflo.aid import odict
 from ioflo.aid.consoling import VERBIAGE_NAMES
 
 
+"""
+Command line interface for didery.py library.  Path to config file containing server list required
+"""
 @click.command()
+@click.argument(
+    'config',
+    type=click.File(),
+)
 @click.option(
-    '--Consensus',
-    '-C',
+    '--save',
+    multiple=False,
+    type=click.Choice(['create-otp', 'update-otp', 'create-history', 'update-history']),
+    help='choose the type of save'
+)
+@click.option(
+    '--retrieve',
+    multiple=False,
+    type=click.Choice(['otp', 'history']),
+    help='retrieve otp or history data'
+)
+@click.option(
+    '--data',
+    '-d',
+    multiple=False,
+    default=[None, None],
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
+    help='path to data file'
+)
+@click.option(
+    '--consensus',
+    '-c',
     multiple=False,
     default=50,
     type=click.IntRange(0, 100),
     help='threshold(%) at which consensus is reached'
 )
 @click.option(
-    '--config',
-    '-c',
-    multiple=False,
-    nargs=1,
-    help='specify config file path'
-)
-@click.option(
-    '--data',
-    '-d',
-    multiple=False,
-    nargs=1,
-    help='specify data file path'
-)
-@click.option(
-    '--verbose',
     '-v',
     multiple=False,
-    type=click.Choice(VERBIAGE_NAMES),
-    default=VERBIAGE_NAMES[0],
-    help='console output verbosity level'
+    count=True,
+    help='verbosity of console output'
 )
-def main(consensus, config, data, verbose):
+def main(config, save, retrieve, data, consensus, verbose):
     projectDirpath = os.path.dirname(
         os.path.dirname(
             os.path.abspath(
@@ -64,8 +75,10 @@ def main(consensus, config, data, verbose):
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
 
     """ Main entry point for ioserve CLI"""
-
-    verbose = VERBIAGE_NAMES.index(verbose)
+    click.echo(verbose)
+    # verbose = verbose-1
+    if verbose < 4:
+        verbose = 4
 
     ioflo.app.run.run(  name="skedder",
                         period=0.125,

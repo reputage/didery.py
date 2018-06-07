@@ -46,7 +46,6 @@ Command line interface for didery.py library.  Path to config file containing se
     '--data',
     '-d',
     multiple=False,
-    default=[None, None],
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
     help='path to data file'
 )
@@ -64,7 +63,8 @@ Command line interface for didery.py library.  Path to config file containing se
     count=True,
     help='verbosity of console output'
 )
-def main(config, save, retrieve, data, consensus, verbose):
+def main(config, save, retrieve, data, consensus, v):
+    verbose = v
     projectDirpath = os.path.dirname(
         os.path.dirname(
             os.path.abspath(
@@ -77,7 +77,7 @@ def main(config, save, retrieve, data, consensus, verbose):
     """ Main entry point for ioserve CLI"""
     click.echo(verbose)
     # verbose = verbose-1
-    if verbose < 4:
+    if verbose > 4:
         verbose = 4
 
     ioflo.app.run.run(  name="skedder",

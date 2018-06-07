@@ -46,6 +46,7 @@ Command line interface for didery.py library.  Path to config file containing se
     '--data',
     '-d',
     multiple=False,
+    default=None,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
     help='path to data file'
 )
@@ -65,6 +66,11 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 def main(config, save, retrieve, data, consensus, v):
     verbose = v
+
+    if save and data is None:
+        click.echo('data file required to save. Use --data, -d [file path]')
+        return
+
     projectDirpath = os.path.dirname(
         os.path.dirname(
             os.path.abspath(
@@ -75,8 +81,6 @@ def main(config, save, retrieve, data, consensus, v):
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
 
     """ Main entry point for ioserve CLI"""
-    click.echo(verbose)
-    # verbose = verbose-1
     if verbose > 4:
         verbose = 4
 

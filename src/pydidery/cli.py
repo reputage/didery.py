@@ -29,7 +29,7 @@ Command line interface for didery.py library.  Path to config file containing se
     '--upload',
     multiple=False,
     type=click.Choice(['otp', 'history']),
-    help='Choose the type of save for existing keys.'
+    help="Choose the type of upload 'otp' or 'history'."
 )
 @click.option(
     '--rotate',
@@ -42,7 +42,7 @@ Command line interface for didery.py library.  Path to config file containing se
     '--retrieve',
     multiple=False,
     type=click.Choice(['otp', 'history']),
-    help='Retrieve otp or history data.'
+    help="Retrieve 'otp' or 'history' data."
 )
 @click.option(
     '--data',
@@ -50,7 +50,7 @@ Command line interface for didery.py library.  Path to config file containing se
     multiple=False,
     default=None,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
-    help='Path to data file.'
+    help='Specify path to data file.'
 )
 @click.option(
     '--consensus',
@@ -64,11 +64,11 @@ Command line interface for didery.py library.  Path to config file containing se
     '-v',
     multiple=False,
     count=True,
-    help='Verbosity of console output. There are 4 verbosity levels -vvvv.'
+    help="Verbosity of console output. There are 5 verbosity levels from '' to '-vvvv.'"
 )
 @click.argument(
     'config',
-    type=click.File(),
+    type=click.File('rw'),
 )
 def main(upload, rotate, retrieve, data, consensus, v, config):
     verbose = v if v <= 4 else 4
@@ -90,8 +90,11 @@ def main(upload, rotate, retrieve, data, consensus, v, config):
     )
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
 
-    """ Main entry point for ioserve CLI"""
+    with open(config) as conf:
+        data = json.load(conf)
+        print(data)
 
+    """ Main entry point for ioserve CLI"""
     ioflo.app.run.run(  name="didery.py",
                         period=0.125,
                         real=True,

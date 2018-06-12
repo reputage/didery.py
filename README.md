@@ -30,7 +30,7 @@ Options:
   --help                         Show this message and exit.
 ```
 
-#### Config File
+### Config File
 The CLI requires a path to a config file with the data shown below.  Because of the sensitive nature of the data signing keys should not be stored in this file and will be deleted upon exit of didery.py.  **DO NOT** enter a signing key **UNLESS** it is required for the current task.
 ```json
 {
@@ -41,7 +41,7 @@ The CLI requires a path to a config file with the data shown below.  Because of 
 	"consensus": 50    //optional for non retrieval requests
 }
 ``` 
-**"servers"** [list/array] _required_
+**"servers"** [list] _required_
  - A list of server address strings.  This must be supplied so the library knows what servers to broadcast and poll from.
  
 **"did"** [string] _required_
@@ -56,7 +56,7 @@ The CLI requires a path to a config file with the data shown below.  Because of 
 **"consensus"** [int]
 - The percent at which consensus is reached.  Value should be between 0 and 100.  You can also use the command line option -c, --consensus instead of this field.  Didery.py will default to the cli value when given both options.
 
-#### Data File
+### Data File
 For certain commands it is necessary to supply a data file.  The file should be json formatted and will contain either the rotation history or the [one time pad](https://en.wikipedia.org/wiki/One-time_pad)(otp) encrypted blob. The data file is required for the following options:
 
 --upload
@@ -84,7 +84,7 @@ The file should follow the format below for history data:
 **"signer"** [integer] _required_
  - 0 based index into signers field. Rotation events signer field will always be 1 or greater.
 
-**"signers"** [list/array] _required_
+**"signers"** [list] _required_
  - List of all public keys. Must contain at least two keys for --upload and 3 or more for --rotation.
 
 The file should follow the format below for [otp](https://en.wikipedia.org/wiki/One-time_pad) data:

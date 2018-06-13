@@ -23,7 +23,6 @@ Options:
   --upload [otp|history]         Choose the type of upload 'otp' or 'history'.
   --rotate                       Send rotation event to didery servers.
   --retrieve [otp|history]       Retrieve 'otp' or 'history' data.
-  -d, --data PATH                Specify path to data file.
   -c, --consensus INTEGER RANGE  Threshold(%) at which consensus is reached.
   -v                             Verbosity of console output. There are 5
                                  verbosity levels from '' to '-vvvv.'
@@ -36,8 +35,6 @@ The CLI requires a path to a config file with the data shown below.  Because of 
 {
 	"servers": [],
 	"did":"",
-	"current_sk":"",   //optional for data retrieval
-	"rotation_sk":"",  //optional for inception event
 	"consensus": 50    //optional for non retrieval requests
 }
 ``` 
@@ -46,12 +43,6 @@ The CLI requires a path to a config file with the data shown below.  Because of 
  
 **"did"** [string] _required_
 - [Decentralized Identifier](https://w3c-ccg.github.io/did-spec/).  This is needed to locate or store a resource.
-
-**"current_sk"** [string]
-- The current signing key.  Should only be supplied when uploading data like an otp blob, rotation history, or rotation event.
-
-**"rotation_sk"** [string]
-- The pre rotated signing key.  This should only be supplied if you are starting a rotation event.
 
 **"consensus"** [int]
 - The percent at which consensus is reached.  Value should be between 0 and 100.  You can also use the command line option -c, --consensus instead of this field.  Didery.py will default to the cli value when given both options.

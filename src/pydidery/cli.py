@@ -52,14 +52,6 @@ Command line interface for didery.py library.  Path to config file containing se
     help="Retrieve 'otp' or 'history' data."
 )
 @click.option(
-    '--data',
-    '-d',
-    multiple=False,
-    default=None,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
-    help='Specify path to data file.'
-)
-@click.option(
     '--consensus',
     '-c',
     multiple=False,
@@ -77,7 +69,7 @@ Command line interface for didery.py library.  Path to config file containing se
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(upload, rotate, retrieve, data, consensus, v, config):
+def main(upload, rotate, retrieve, consensus, v, config):
     verbose = v if v <= 4 else 4
     preloads = []
 
@@ -89,15 +81,16 @@ def main(upload, rotate, retrieve, data, consensus, v, config):
 
     try:
         if upload:
-            preloads.extend(uploadSetup(upload, data, configData))
+            preloads.extend(uploadSetup(upload, configData))
 
         if rotate:
-            preloads.extend(rotateSetup(rotate, data, configData))
+            preloads.extend(rotateSetup(rotate, configData))
 
         if retrieve:
-            preloads.extend(retrieveSetup(retrieve))
+            preloads.extend(retrieveSetup(retrieve, configData, consensus))
 
     except ValidationError as ex:
+        click.echo(str(ex))
         return
 
     projectDirpath = os.path.dirname(
@@ -122,61 +115,77 @@ def main(upload, rotate, retrieve, data, consensus, v, config):
                         verbose=verbose,
                         consolepath='',
                         statistics=False,
-                        preloads=[('.main.server.port', odict(value=""))])
+                        preloads=preloads)
 
 
-def uploadSetup(upload, dataFile, config):
+def uploadSetup(upload, config):
     data = {}
-    if dataFile is None:
-        if upload == 'otp':
-            click.echo('Data file required to upload otp blobs. Use --data, -d [file path]')
-            raise ValidationError('Data file required to upload otp blobs. Use --data, -d [file path]')
-        elif upload == 'history':
-            history, sk = keyInception()
+    generate = False
 
-            config["current_sk"] = sk
+    if upload == "otp":
+        path = click.prompt(
+            "Please enter a path to the data file: ",
+            type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+        )
 
+        data = h.parseDataFile(path, upload)
+
+    if upload == "history":
+        generate = click.confirm("Would you like to generate key pairs?")
+        if generate:
+            history, sk = historyInit()
             data = {
                 "history": history
             }
-    else:
-        if "current_sk" not in config or config["current_sk"] == "":
-            click.echo("Current signing key required to upload data.")
-            raise ValidationError("Current signing key required to upload data.")
+        else:
+            path = click.prompt(
+                "Please enter a path to the data file: ",
+                type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+            )
 
-        data = h.parseDataFile(dataFile, upload)
+            data = h.parseDataFile(path, upload)
+
+    if not generate:
+        sk = click.prompt("Please enter you signing/private key: ")
+
 
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
         ('.main.upload.data', odict(value=data)),
         ('.main.upload.did', odict(value=config["did"])),
-        ('.main.upload.sk', odict(value=config["current_sk"])),
+        ('.main.upload.sk', odict(value=sk)),
     ]
-
-    if "consensus" in config:
-        preloads.append(('.main.upload.consensus', odict(value=config["consensus"])))
 
     return preloads
 
 
-def rotateSetup(rotate, data, config):
-    if rotate and data is None:
-        click.echo('Data file required to start rotation event. Use --data, -d [file path]')
-        raise ValidationError('Data file required to start rotation event. Use --data, -d [file path]')
+def rotateSetup(rotate, config):
+    if click.confirm("Do you have a data file?"):
+        path = click.prompt(
+            "Please enter a path to the data file: ",
+            type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+        )
+
+        data = h.parseDataFile(path, "history")
     else:
-        pass
+        # TODO: Query didery servers for current data using did in config
+        data = {"signers": []}
+
+    csk = click.prompt("Please enter your current signing/private key: ")
+    rsk = click.prompt("Please enter the signing/private key you are rotating to: ")
+
+    if click.confirm("Do you need a new pre-rotated key pair generated"):
+        pvk, psk, pdid = keyery()
+        data["signers"].append(pvk)
+        data["signer"] = int(data["signer"]) + 1
 
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
         ('.main.upload.data', odict(value=data)),
         ('.main.upload.did', odict(value=config["did"])),
-        ('.main.upload.sk', odict(value=config["current_sk"])),
+        ('.main.upload.sk', odict(value=csk)),
+        ('.main.upload.psk', odict(value=rsk))
     ]
-
-    if "consensus" in config:
-        preloads.append(('.main.upload.consensus', odict(value=config["consensus"])))
-    if "rotation_sk" in config:
-        preloads.append(('.main.upload.psk', odict(value=config["rotation_sk"])))
 
     return preloads
 
@@ -184,7 +193,6 @@ def rotateSetup(rotate, data, config):
 def retrieveSetup(retrieve, config, consensus=None):
     if consensus is None:
         if "consensus" not in config or config["consensus"] == "":
-            click.echo('Consensus level must be specified either via the cli or the config file.')
             raise ValidationError('Consensus level must be specified either via the cli or the config file.')
         consensus = config["consensus"]
 
@@ -197,11 +205,12 @@ def retrieveSetup(retrieve, config, consensus=None):
     return preloads
 
 
-def keyInception():
-    vk, sk = h.genKeys()
-    pvk, psk = h.genKeys()
+def historyInit():
+    vk, sk, did = h.genKeys()
+    pvk, psk, pdid = h.genKeys()
+
     history = {
-        "id": h.makeDid(vk),
+        "id": did,
         "signer": 0,
         "signers": [
             vk,
@@ -210,10 +219,18 @@ def keyInception():
     }
 
     with open('/tmp/didery.keys.json', 'w') as keyFile:
-        keyFile.write(json.dumps({"current_sk": sk, "current_vk": vk, "pre_rotated_sk": psk, "pre_rotated_vk": pvk}))
+        keys = {
+            "current_sk": sk,
+            "current_vk": vk,
+            "pre_rotated_sk": psk,
+            "pre_rotated_vk": pvk
+        }
 
-    click.confirm('Keys have been generated and stored in /tmp/didery.keys.json. '
-                  'Make a copy and store them securely this file will be deleted after this prompt finishes.')
+        keyFile.write(json.dumps(keys, encoding='utf-8'))
+
+    click.prompt('\nKeys have been generated and stored in /tmp/didery.keys.json. \n\n'
+                 'Make a copy and store them securely. \n'
+                 'The file will be deleted after you enter a key')
 
     os.remove('/tmp/didery.keys.json')
 
@@ -221,3 +238,24 @@ def keyInception():
 
     return history, sk
 
+
+def keyery():
+    vk, sk, did = h.genKeys()
+
+    with open('/tmp/didery.keys.json', 'w') as keyFile:
+        keys = {
+            "signing_key": sk,
+            "verification_key": vk
+        }
+
+        keyFile.write(json.dumps(keys, encoding='utf-8'))
+
+    click.prompt('\nKeys have been generated and stored in /tmp/didery.keys.json. \n\n'
+                 'Make a copy and store them securely. \n'
+                 'The file will be deleted after you enter a key')
+
+    os.remove('/tmp/didery.keys.json')
+
+    click.echo('/tmp/didery.keys.json deleted.')
+
+    return vk, sk, did

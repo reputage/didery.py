@@ -19,11 +19,26 @@ from ioflo.aid import getConsole
 console = getConsole()
 
 
+def keyToKey64u(key):
+    """
+    Convert and return bytes key to unicode base64 url-file safe version
+    """
+    return base64.urlsafe_b64encode(key).decode("utf-8")
+
+
+def key64uToKey(key64u):
+    """
+    Convert and return unicode base64 url-file safe key64u to bytes key
+    """
+    return base64.urlsafe_b64decode(key64u.encode("utf-8"))
+
+
 def genKeys():
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
     vk, sk = libnacl.crypto_sign_seed_keypair(seed)
+    did = makeDid(vk)
 
-    return vk, sk
+    return keyToKey64u(vk), keyToKey64u(sk), did
 
 
 def makeDid(vk, method="dad"):
@@ -37,19 +52,12 @@ def makeDid(vk, method="dad"):
     return did
 
 
-def extractDidSignerParts(signer, method="dad"):
+def validateDid(did, method="dad"):
     """
     Parses and returns did index keystr from signer key indexed did
     as tuple (did, index, keystr)
     raises ValueError if fails parsing
     """
-    # get signer key from read data. assumes that resource is valid
-    try:
-        did, index = signer.rsplit("#", maxsplit=1)
-        index = int(index)  # get index and sdid from signer field
-    except ValueError as ex:
-        raise ValueError("Invalid indexed signer value")
-
     try:  # correct did format  pre:method:keystr
         pre, meth, keystr = did.split(":")
     except ValueError as ex:
@@ -58,7 +66,7 @@ def extractDidSignerParts(signer, method="dad"):
     if pre != "did" or meth != method:
         raise ValueError("Invalid DID value")
 
-    return (did, index, keystr)
+    return (did, keystr)
 
 
 def parseJsonFile(file, requireds=()):
@@ -99,15 +107,6 @@ def parseJsonFile(file, requireds=()):
     return data
 
 
-def secureConfigFile(file, data):
-    secureData = deepcopy(data)
-    secureData['current_sk'] = ""
-    secureData['rotation_sk'] = ""
-
-    with open(file, 'w') as f:
-        f.write(json.dumps(secureData, encoding='utf-8'))
-
-
 def parseConfigFile(file):
     """
     Validate the data in the configuration file
@@ -119,7 +118,7 @@ def parseConfigFile(file):
     data = parseJsonFile(file, ["servers", "did"])
 
     # Check for valid did
-    extractDidSignerParts(data["did"])
+    validateDid(data["did"])
 
     if not isinstance(data["servers"], list):
         raise ValidationError('"servers" field must be a list.')
@@ -145,7 +144,7 @@ def parseDataFile(file, dtype):
                 raise ValidationError("Missing required field {}".format(field))
 
     # Check for valid did
-    extractDidSignerParts(data[dtype]["id"])
+    validateDid(data[dtype]["id"])
 
     return data
 

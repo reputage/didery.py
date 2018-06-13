@@ -1,5 +1,10 @@
+import base64
+import libnacl
+
 from ..diderying import ValidationError
 
+from collections import OrderedDict as ODict
+from copy import deepcopy
 try:
     import simplejson as json
 except ImportError:
@@ -14,39 +19,135 @@ from ioflo.aid import getConsole
 console = getConsole()
 
 
-def parseJson(data, requireds=()):
+def genKeys():
+    seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
+    vk, sk = libnacl.crypto_sign_seed_keypair(seed)
+
+    return vk, sk
+
+
+def makeDid(vk, method="dad"):
+    """
+    Create and return Indigo Did from bytes vk.
+    vk is 32 byte verifier key from EdDSA (Ed25519) keypair
+    """
+    # convert verkey to jsonable unicode string of base64 url-file safe
+    vk64u = base64.urlsafe_b64encode(vk).decode("utf-8")
+    did = "did:{}:{}".format(method, vk64u)
+    return did
+
+
+def extractDidSignerParts(signer, method="dad"):
+    """
+    Parses and returns did index keystr from signer key indexed did
+    as tuple (did, index, keystr)
+    raises ValueError if fails parsing
+    """
+    # get signer key from read data. assumes that resource is valid
+    try:
+        did, index = signer.rsplit("#", maxsplit=1)
+        index = int(index)  # get index and sdid from signer field
+    except ValueError as ex:
+        raise ValueError("Invalid indexed signer value")
+
+    try:  # correct did format  pre:method:keystr
+        pre, meth, keystr = did.split(":")
+    except ValueError as ex:
+        raise ValueError("Malformed DID value")
+
+    if pre != "did" or meth != method:
+        raise ValueError("Invalid DID value")
+
+    return (did, index, keystr)
+
+
+def parseJsonFile(file, requireds=()):
     """
         Returns deserialized version of data string if data is correctly formed.
         Otherwise returns None
 
-        :param data is json encoded unicode string
+        :param file is json encoded unicode string
         :param requireds tuple of string keys required in json data
         """
+    data = None
 
-    try:
-        # now validate message data
+    with open(file) as f:
         try:
-            dat = json.loads(data, object_pairs_hook=ODict)
-        except ValueError as ex:
-            raise ValidationError("Invalid JSON")  # invalid json
+            # now validate message data
+            try:
+                data = json.load(f, object_pairs_hook=ODict)
+            except ValueError as ex:
+                raise ValidationError("Invalid JSON")  # invalid json
 
-        if not dat:  # registration must not be empty
-            raise ValidationError("Empty body")
+            if not data:  # registration must not be empty
+                raise ValidationError("Empty body")
 
-        if not isinstance(dat, dict):  # must be dict subclass
-            raise ValidationError("JSON not dict")
+            if not isinstance(data, dict):  # must be dict subclass
+                raise ValidationError("JSON not dict")
 
-        for field in requireds:
-            if field not in dat:
+            for field in requireds:
+                if field not in data:
+                    raise ValidationError("Missing required field {}".format(field))
+
+        except ValidationError:
+            raise
+
+        except Exception as ex:  # unknown problem
+            print(ex)
+            raise ValidationError("Unexpected error")
+
+    return data
+
+
+def secureConfigFile(file, data):
+    secureData = deepcopy(data)
+    secureData['current_sk'] = ""
+    secureData['rotation_sk'] = ""
+
+    with open(file, 'w') as f:
+        f.write(json.dumps(secureData, encoding='utf-8'))
+
+
+def parseConfigFile(file):
+    """
+    Validate the data in the configuration file
+    :param file: click.Path object
+    :param upload: upload otp blob or rotation history
+    :param rotate: rotation event
+    :return: parsed configuration data
+    """
+    data = parseJsonFile(file, ["servers", "did"])
+
+    # Check for valid did
+    extractDidSignerParts(data["did"])
+
+    if not isinstance(data["servers"], list):
+        raise ValidationError('"servers" field must be a list.')
+
+    return data
+
+
+def parseDataFile(file, dtype):
+    data = {}
+
+    if dtype == "history":
+        data = parseJsonFile(file, ["history"])
+
+        for field in ["id", "signer", "signers"]:
+            if field not in data["history"]:
                 raise ValidationError("Missing required field {}".format(field))
 
-    except ValidationError:
-        raise
+    if dtype == "otp":
+        data = parseJsonFile(file, ["otp"])
 
-    except Exception as ex:  # unknown problem
-        raise ValidationError("Unexpected error")
+        for field in ["id", "blob"]:
+            if field not in data["otp"]:
+                raise ValidationError("Missing required field {}".format(field))
 
-    return dat
+    # Check for valid did
+    extractDidSignerParts(data[dtype]["id"])
+
+    return data
 
 
 def backendRequest(method=u'GET',

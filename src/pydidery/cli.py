@@ -18,7 +18,14 @@ import os
 import click
 import ioflo.app.run
 
+from pydidery.help import helping as h
+from pydidery.diderying import ValidationError
 from ioflo.aid import odict
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 
 """
@@ -68,17 +75,29 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.argument(
     'config',
-    type=click.File('rw'),
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
 def main(upload, rotate, retrieve, data, consensus, v, config):
     verbose = v if v <= 4 else 4
+    preloads = []
 
-    if upload == 'otp' and data is None:
-        click.echo('data file required to upload otp blobs. Use --data, -d [file path]')
+    if upload and rotate or upload and retrieve or rotate and retrieve:
+        click.echo("Cannot combine --upload, --rotate, or --retrieve")
         return
 
-    if rotate and data is None:
-        click.echo('data file required to start rotation event. Use --data, -d [file path]')
+    configData = h.parseConfigFile(config)
+
+    try:
+        if upload:
+            preloads.extend(uploadSetup(upload, data, configData))
+
+        if rotate:
+            preloads.extend(rotateSetup(rotate, data, configData))
+
+        if retrieve:
+            preloads.extend(retrieveSetup(retrieve))
+
+    except ValidationError as ex:
         return
 
     projectDirpath = os.path.dirname(
@@ -89,10 +108,6 @@ def main(upload, rotate, retrieve, data, consensus, v, config):
         )
     )
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
-
-    with open(config) as conf:
-        data = json.load(conf)
-        print(data)
 
     """ Main entry point for ioserve CLI"""
     ioflo.app.run.run(  name="didery.py",
@@ -108,3 +123,101 @@ def main(upload, rotate, retrieve, data, consensus, v, config):
                         consolepath='',
                         statistics=False,
                         preloads=[('.main.server.port', odict(value=""))])
+
+
+def uploadSetup(upload, dataFile, config):
+    data = {}
+    if dataFile is None:
+        if upload == 'otp':
+            click.echo('Data file required to upload otp blobs. Use --data, -d [file path]')
+            raise ValidationError('Data file required to upload otp blobs. Use --data, -d [file path]')
+        elif upload == 'history':
+            history, sk = keyInception()
+
+            config["current_sk"] = sk
+
+            data = {
+                "history": history
+            }
+    else:
+        if "current_sk" not in config or config["current_sk"] == "":
+            click.echo("Current signing key required to upload data.")
+            raise ValidationError("Current signing key required to upload data.")
+
+        data = h.parseDataFile(dataFile, upload)
+
+    preloads = [
+        ('.main.upload.servers', odict(value=config["servers"])),
+        ('.main.upload.data', odict(value=data)),
+        ('.main.upload.did', odict(value=config["did"])),
+        ('.main.upload.sk', odict(value=config["current_sk"])),
+    ]
+
+    if "consensus" in config:
+        preloads.append(('.main.upload.consensus', odict(value=config["consensus"])))
+
+    return preloads
+
+
+def rotateSetup(rotate, data, config):
+    if rotate and data is None:
+        click.echo('Data file required to start rotation event. Use --data, -d [file path]')
+        raise ValidationError('Data file required to start rotation event. Use --data, -d [file path]')
+    else:
+        pass
+
+    preloads = [
+        ('.main.upload.servers', odict(value=config["servers"])),
+        ('.main.upload.data', odict(value=data)),
+        ('.main.upload.did', odict(value=config["did"])),
+        ('.main.upload.sk', odict(value=config["current_sk"])),
+    ]
+
+    if "consensus" in config:
+        preloads.append(('.main.upload.consensus', odict(value=config["consensus"])))
+    if "rotation_sk" in config:
+        preloads.append(('.main.upload.psk', odict(value=config["rotation_sk"])))
+
+    return preloads
+
+
+def retrieveSetup(retrieve, config, consensus=None):
+    if consensus is None:
+        if "consensus" not in config or config["consensus"] == "":
+            click.echo('Consensus level must be specified either via the cli or the config file.')
+            raise ValidationError('Consensus level must be specified either via the cli or the config file.')
+        consensus = config["consensus"]
+
+    preloads = [
+        ('.main.upload.servers', odict(value=config["servers"])),
+        ('.main.upload.did', odict(value=config["did"])),
+        ('.main.upload.consensus', odict(value=consensus))
+    ]
+
+    return preloads
+
+
+def keyInception():
+    vk, sk = h.genKeys()
+    pvk, psk = h.genKeys()
+    history = {
+        "id": h.makeDid(vk),
+        "signer": 0,
+        "signers": [
+            vk,
+            pvk
+        ]
+    }
+
+    with open('/tmp/didery.keys.json', 'w') as keyFile:
+        keyFile.write(json.dumps({"current_sk": sk, "current_vk": vk, "pre_rotated_sk": psk, "pre_rotated_vk": pvk}))
+
+    click.confirm('Keys have been generated and stored in /tmp/didery.keys.json. '
+                  'Make a copy and store them securely this file will be deleted after this prompt finishes.')
+
+    os.remove('/tmp/didery.keys.json')
+
+    click.echo('/tmp/didery.keys.json deleted.')
+
+    return history, sk
+

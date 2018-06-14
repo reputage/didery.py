@@ -19,35 +19,38 @@ import click
 import ioflo.app.run
 
 from ioflo.aid import odict
-from ioflo.aid.consoling import VERBIAGE_NAMES
 
 
 """
 Command line interface for didery.py library.  Path to config file containing server list required
 """
 @click.command()
-@click.argument(
-    'config',
-    type=click.File(),
+@click.option(
+    '--upload',
+    multiple=False,
+    type=click.Choice(['otp', 'history']),
+    help="Choose the type of upload 'otp' or 'history'."
 )
 @click.option(
-    '--save',
+    '--rotate',
     multiple=False,
-    type=click.Choice(['create-otp', 'update-otp', 'create-history', 'update-history']),
-    help='choose the type of save'
+    is_flag=True,
+    default=False,
+    help='Send rotation event to didery servers.'
 )
 @click.option(
     '--retrieve',
     multiple=False,
     type=click.Choice(['otp', 'history']),
-    help='retrieve otp or history data'
+    help="Retrieve 'otp' or 'history' data."
 )
 @click.option(
     '--data',
     '-d',
     multiple=False,
+    default=None,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
-    help='path to data file'
+    help='Specify path to data file.'
 )
 @click.option(
     '--consensus',
@@ -55,16 +58,29 @@ Command line interface for didery.py library.  Path to config file containing se
     multiple=False,
     default=50,
     type=click.IntRange(0, 100),
-    help='threshold(%) at which consensus is reached'
+    help='Threshold(%) at which consensus is reached.'
 )
 @click.option(
     '-v',
     multiple=False,
     count=True,
-    help='verbosity of console output'
+    help="Verbosity of console output. There are 5 verbosity levels from '' to '-vvvv.'"
 )
-def main(config, save, retrieve, data, consensus, v):
-    verbose = v
+@click.argument(
+    'config',
+    type=click.File('rw'),
+)
+def main(upload, rotate, retrieve, data, consensus, v, config):
+    verbose = v if v <= 4 else 4
+
+    if upload == 'otp' and data is None:
+        click.echo('data file required to upload otp blobs. Use --data, -d [file path]')
+        return
+
+    if rotate and data is None:
+        click.echo('data file required to start rotation event. Use --data, -d [file path]')
+        return
+
     projectDirpath = os.path.dirname(
         os.path.dirname(
             os.path.abspath(
@@ -74,13 +90,12 @@ def main(config, save, retrieve, data, consensus, v):
     )
     floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
 
-    """ Main entry point for ioserve CLI"""
-    click.echo(verbose)
-    # verbose = verbose-1
-    if verbose > 4:
-        verbose = 4
+    with open(config) as conf:
+        data = json.load(conf)
+        print(data)
 
-    ioflo.app.run.run(  name="skedder",
+    """ Main entry point for ioserve CLI"""
+    ioflo.app.run.run(  name="didery.py",
                         period=0.125,
                         real=True,
                         retro=True,

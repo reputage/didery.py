@@ -2,5 +2,24 @@
 
 house main
 
-	framer pydidery be active first pydidery
-		frame pydidery
+	framer diderypy be active first diderypy
+		frame diderypy
+		    print starting didery.py service
+		    bid start upload
+		    bid start rotate
+		    bid start retrieve
+
+	framer upload be inactive via .main.upload
+	    frame upload
+	        print starting upload
+	        do upload data
+
+	framer rotate be inactive via .main.rotate
+	    frame rotate
+	        print starting rotation
+	        do rotation
+
+	framer retrieve be inactive via .main.retrieve
+	    frame retrieve
+            print starting retrieval
+            do retrieval

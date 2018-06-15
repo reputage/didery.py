@@ -18,9 +18,11 @@ import os
 import click
 import ioflo.app.run
 
+from ioflo.aid import odict
+
 from pydidery.help import helping as h
 from pydidery.diderying import ValidationError
-from ioflo.aid import odict
+from pydidery.lib import generating as gen
 
 try:
     import simplejson as json
@@ -175,7 +177,7 @@ def rotateSetup(rotate, config):
     rsk = click.prompt("Please enter the signing/private key you are rotating to: ")
 
     if click.confirm("Do you need a new pre-rotated key pair generated"):
-        pvk, psk, pdid = keyery()
+        pvk, psk = keyery()
         data["signers"].append(pvk)
         data["signer"] = int(data["signer"]) + 1
 
@@ -206,17 +208,7 @@ def retrieveSetup(retrieve, config, consensus=None):
 
 
 def historyInit():
-    vk, sk, did = h.genKeys()
-    pvk, psk, pdid = h.genKeys()
-
-    history = {
-        "id": did,
-        "signer": 0,
-        "signers": [
-            vk,
-            pvk
-        ]
-    }
+    history, vk, sk, pvk, psk = gen.historyGen()
 
     with open('/tmp/didery.keys.json', 'w') as keyFile:
         keys = {
@@ -240,7 +232,7 @@ def historyInit():
 
 
 def keyery():
-    vk, sk, did = h.genKeys()
+    sk, vk = gen.keyGen()
 
     with open('/tmp/didery.keys.json', 'w') as keyFile:
         keys = {
@@ -258,4 +250,4 @@ def keyery():
 
     click.echo('/tmp/didery.keys.json deleted.')
 
-    return vk, sk, did
+    return vk, sk

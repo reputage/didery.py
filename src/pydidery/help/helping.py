@@ -18,38 +18,15 @@ from ioflo.aid import timing
 from ioflo.aid import getConsole
 console = getConsole()
 
-
-def keyToKey64u(key):
-    """
-    Convert and return bytes key to unicode base64 url-file safe version
-    """
-    return base64.urlsafe_b64encode(key).decode("utf-8")
-
-
-def key64uToKey(key64u):
-    """
-    Convert and return unicode base64 url-file safe key64u to bytes key
-    """
-    return base64.urlsafe_b64decode(key64u.encode("utf-8"))
+from ..lib import generating as gen
 
 
 def genKeys():
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
     vk, sk = libnacl.crypto_sign_seed_keypair(seed)
-    did = makeDid(vk)
+    did = gen.didGen(vk)
 
     return keyToKey64u(vk), keyToKey64u(sk), did
-
-
-def makeDid(vk, method="dad"):
-    """
-    Create and return Indigo Did from bytes vk.
-    vk is 32 byte verifier key from EdDSA (Ed25519) keypair
-    """
-    # convert verkey to jsonable unicode string of base64 url-file safe
-    vk64u = base64.urlsafe_b64encode(vk).decode("utf-8")
-    did = "did:{}:{}".format(method, vk64u)
-    return did
 
 
 def validateDid(did, method="dad"):

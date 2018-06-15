@@ -44,7 +44,7 @@ The CLI requires a path to a config file with the data shown below.  Because of 
 **"did"** [string] _required_
 - [Decentralized Identifier](https://w3c-ccg.github.io/did-spec/).  This is needed to locate or store a resource.
 
-**"consensus"** [int]
+**"consensus"** [int] _optional_  
 - The percent at which consensus is reached.  Value should be between 0 and 100.  You can also use the command line option -c, --consensus instead of this field.  Didery.py will default to the cli value when given both options.
 
 ### Data File

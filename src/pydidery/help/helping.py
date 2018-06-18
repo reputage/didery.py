@@ -1,10 +1,8 @@
-import base64
 import libnacl
 
 from ..diderying import ValidationError
 
 from collections import OrderedDict as ODict
-from copy import deepcopy
 try:
     import simplejson as json
 except ImportError:
@@ -16,9 +14,10 @@ from ioflo.aio import WireLog
 from ioflo.base import Store
 from ioflo.aid import timing
 from ioflo.aid import getConsole
-console = getConsole()
 
 from ..lib import generating as gen
+
+console = getConsole()
 
 
 def genKeys():
@@ -26,7 +25,7 @@ def genKeys():
     vk, sk = libnacl.crypto_sign_seed_keypair(seed)
     did = gen.didGen(vk)
 
-    return keyToKey64u(vk), keyToKey64u(sk), did
+    return gen.keyToKey64u(vk), gen.keyToKey64u(sk), did
 
 
 def validateDid(did, method="dad"):
@@ -43,7 +42,7 @@ def validateDid(did, method="dad"):
     if pre != "did" or meth != method:
         raise ValueError("Invalid DID value")
 
-    return (did, keystr)
+    return did, keystr
 
 
 def parseJsonFile(file, requireds=()):
@@ -88,8 +87,6 @@ def parseConfigFile(file):
     """
     Validate the data in the configuration file
     :param file: click.Path object
-    :param upload: upload otp blob or rotation history
-    :param rotate: rotation event
     :return: parsed configuration data
     """
     data = parseJsonFile(file, ["servers", "did"])
@@ -126,17 +123,17 @@ def parseDataFile(file, dtype):
     return data
 
 
-def backendRequest(method=u'GET',
-                   scheme=u'',  #default if not in path
-                   host=u'localhost',  # default if not in path
-                   port=None, # default if not in path
-                   path=u'/',
-                   qargs=None,
-                   data=None,
-                   store=None,
-                   timeout=2.0,
-                   buffer=False,
-                   ):
+def httpRequest(method=u'GET',
+                scheme=u'',  # default if not in path
+                host=u'localhost',  # default if not in path
+                port=None,  # default if not in path
+                path=u'/',
+                qargs=None,
+                headers=None,
+                data=None,
+                store=None,
+                timeout=2.0,
+                buffer=False,):
     """
     Perform Async ReST request to Backend Server
 
@@ -161,8 +158,9 @@ def backendRequest(method=u'GET',
     else:
         wlog = None
 
-    headers = odict([('Accept', 'application/json'),
-                     ('Connection', 'close')])
+    if headers is None:
+        headers = odict([('Accept', 'application/json'),
+                         ('Connection', 'close')])
 
     client = Patron(bufsize=131072,
                     wlog=wlog,
@@ -178,7 +176,7 @@ def backendRequest(method=u'GET',
                     reconnectable=False,
                     )
 
-    console.concise("Making Backend Request {0} {1} ...\n".format(method, path))
+    console.concise("Making Request {0} {1} ...\n".format(method, path))
 
     client.transmit()
     # assumes store clock is advanced elsewhere
@@ -188,7 +186,7 @@ def backendRequest(method=u'GET',
         try:
             client.serviceAll()
         except Exception as ex:
-            console.terse("Error: Servicing backend client. '{0}'\n".format(ex))
+            console.terse("Error: Servicing client. '{0}'\n".format(ex))
             raise ex
         yield b''  # this is eventually yielded by wsgi app while waiting
 

@@ -197,4 +197,5 @@ def httpRequest(method=u'GET',
     if wlog:
         wlog.close()
 
+    console.concise(response)
     return response

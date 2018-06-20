@@ -69,6 +69,13 @@ def keyGen(seed=None):
     return keyToKey64u(vk), keyToKey64u(sk)
 
 
+def signResource(resource, sKey):
+    sig = libnacl.crypto_sign(resource, sKey)
+    sig = sig[:libnacl.crypto_sign_BYTES]
+
+    return keyToKey64u(sig)
+
+
 def historyGen(seed=None):
     """
     historyGen generates a new key history dictionary and returns the

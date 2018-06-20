@@ -12,14 +12,14 @@ house main
 	framer upload be inactive via .main.upload
 	    frame upload
 	        print starting upload
-	        do upload data
+	        do upload data at enter
 
 	framer rotate be inactive via .main.rotate
 	    frame rotate
 	        print starting rotation
-	        do rotation
+	        do rotation at enter
 
 	framer retrieve be inactive via .main.retrieve
 	    frame retrieve
             print starting retrieval
-            do retrieval
+            do retrieval at enter

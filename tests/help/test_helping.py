@@ -1,4 +1,5 @@
 import pytest
+import falcon
 import asyncio
 import aiohttp
 from asyncio import ensure_future
@@ -11,6 +12,9 @@ except ImportError:
 
 from ioflo.aio.http import httping
 from ioflo.aio.http.httping import HTTPError
+from ioflo.aio.http import Valet
+
+# from didery import routing
 
 from pydidery.help import helping as h
 from pydidery.lib import generating as gen
@@ -53,7 +57,7 @@ def testHttpRequest():
     history, vk, sk, pvk, psk = gen.historyGen()
     history['changed'] = str(arrow.utcnow())
     did = history['id']
-    url = "http://localhost:8080/history/" + did
+    url = "http://localhost:8080/history/"
     headers = {
         "Signature": 'signer="{0}"'.format(gen.signResource(json.dumps(history).encode('utf-8'), sk))
     }
@@ -72,6 +76,18 @@ def testHttpRequest():
 
 
 def testPaetron():
+    # app = falcon.API(middleware=[routing.CORSMiddleware()])
+    # routing.loadEndPoints(app, store=self.store)
+    #
+    # valet = Valet(
+    #     port=port,
+    #     bufsize=131072,
+    #     wlog=None,
+    #     store=self.store,
+    #     app=app,
+    #     timeout=0.5,
+    # )
+
     response = paetronHelper()
 
     while True:
@@ -83,13 +99,14 @@ def testPaetron():
 
     history, vk, sk, pvk, psk = gen.historyGen()
     history['changed'] = str(arrow.utcnow())
-    did = history['id']
-    path = "history/" + did
+    body = json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    path = "history/"
     headers = {
-        "Signature": 'signer="{0}"'.format(gen.signResource(json.dumps(history, ensure_ascii=False).encode('utf-8'), sk))
+        "Signature": 'signer="{0}"'.format(gen.signResource(body, gen.key64uToKey(sk)))
     }
 
-    response = paetronHelper("POST", path=path, body=json.dumps(history, ).encode('utf-8'), headers=headers)
+    print(body)
+    response = paetronHelper("POST", path=path, data=history, headers=headers)
 
     while True:
         try:

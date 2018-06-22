@@ -10,6 +10,7 @@ except ImportError:
     import json
 
 from ioflo.aio.http import httping
+from ioflo.aio.http.httping import HTTPError
 
 from pydidery.help import helping as h
 from pydidery.lib import generating as gen
@@ -32,19 +33,18 @@ async def httpPost(url, data, headers):
             return status, data
 
 
-def paetronHelper():
-    result = yield from h.httpRequest("GET", host="localhost", port=8080, path="history")
+def paetronHelper(method="GET", host="localhost", port=8080, path="history", headers=None, data=None, body=b''):
+    result = yield from h.httpRequest(method, host=host, port=port, path=path, headers=headers, data=data, body=body)
 
     if result['status'] != 200:
+        print(result)
         if result['errored']:
             emsg = result['error']
         else:
             emsg = "unknown"
-        raise httping.HTTPError(berep['status'],
+        raise httping.HTTPError(result['status'],
                                 title="Backend Validation Error",
                                 detail="Error backend validation. {}".format(emsg))
-
-    print(result['body'].decode())
 
     return result['body'].decode()
 
@@ -75,11 +75,29 @@ def testPaetron():
     response = paetronHelper()
 
     while True:
-        test = next(response)
-        print(test)
-        if not test:
+        try:
+            next(response)
+        except StopIteration as si:
+            print("Final: " + si.value)
             break
 
-    # print(test)
+    history, vk, sk, pvk, psk = gen.historyGen()
+    history['changed'] = str(arrow.utcnow())
+    did = history['id']
+    path = "history/" + did
+    headers = {
+        "Signature": 'signer="{0}"'.format(gen.signResource(json.dumps(history, ensure_ascii=False).encode('utf-8'), sk))
+    }
+
+    response = paetronHelper("POST", path=path, body=json.dumps(history, ).encode('utf-8'), headers=headers)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            print("Final: " + str(si))
+            break
+        except HTTPError as er:
+            print(er.detail)
 
     assert False

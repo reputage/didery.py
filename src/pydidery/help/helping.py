@@ -130,6 +130,7 @@ def httpRequest(method=u'GET',
                 path=u'/',
                 qargs=None,
                 headers=None,
+                body=b'',
                 data=None,
                 store=None,
                 timeout=2.0,
@@ -172,6 +173,7 @@ def httpRequest(method=u'GET',
                     path=path,
                     qargs=qargs,
                     headers=headers,
+                    body=body,
                     data=data,
                     reconnectable=False,
                     )
@@ -197,5 +199,6 @@ def httpRequest(method=u'GET',
     if wlog:
         wlog.close()
 
-    console.concise(response)
+    # response.get('status')
+    # response.get('body').decode('utf-8')
     return response

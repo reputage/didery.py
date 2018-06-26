@@ -8,6 +8,10 @@ house main
 		    bid start upload
 		    bid start rotate
 		    bid start retrieve
+		    go next if elapsed > 5
+
+		frame stopper
+		    bid stop all
 
 	framer upload be inactive via .main.upload
 	    frame upload

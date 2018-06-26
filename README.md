@@ -37,8 +37,7 @@ The CLI requires a path to a config file with the data shown below.  Because of 
 ```json
 {
 	"servers": [],
-	"did":"",
-	"consensus": 50    //optional for non retrieval requests
+	"did":""
 }
 ``` 
 **"servers"** [list] _required_

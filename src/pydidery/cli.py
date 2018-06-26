@@ -54,14 +54,6 @@ Command line interface for didery.py library.  Path to config file containing se
     help="Retrieve 'otp' or 'history' data."
 )
 @click.option(
-    '--consensus',
-    '-c',
-    multiple=False,
-    default=50,
-    type=click.IntRange(0, 100),
-    help='Threshold(%) at which consensus is reached.'
-)
-@click.option(
     '-v',
     multiple=False,
     count=True,
@@ -71,7 +63,7 @@ Command line interface for didery.py library.  Path to config file containing se
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(upload, rotate, retrieve, consensus, v, config):
+def main(upload, rotate, retrieve, v, config):
     verbose = v if v <= 4 else 4
     preloads = []
 
@@ -89,7 +81,7 @@ def main(upload, rotate, retrieve, consensus, v, config):
             preloads.extend(rotateSetup(rotate, configData))
 
         if retrieve:
-            preloads.extend(retrieveSetup(retrieve, configData, consensus))
+            preloads.extend(retrieveSetup(retrieve, configData))
 
     except ValidationError as ex:
         click.echo(str(ex))
@@ -122,7 +114,7 @@ def main(upload, rotate, retrieve, consensus, v, config):
 
 def uploadSetup(upload, config):
     data = {}
-    generate = False
+    sk = None
 
     if upload == "otp":
         path = click.prompt(
@@ -132,13 +124,12 @@ def uploadSetup(upload, config):
 
         data = h.parseDataFile(path, upload)
 
+        sk = click.prompt("Please enter you signing/private key: ")
+
     if upload == "history":
-        generate = click.confirm("Would you like to generate key pairs?")
-        if generate:
+        if click.confirm("Would you like to generate key pairs?"):
             history, sk = historyInit()
-            data = {
-                "history": history
-            }
+            data = history
         else:
             path = click.prompt(
                 "Please enter a path to the data file: ",
@@ -147,8 +138,7 @@ def uploadSetup(upload, config):
 
             data = h.parseDataFile(path, upload)
 
-    if not generate:
-        sk = click.prompt("Please enter you signing/private key: ")
+            sk = click.prompt("Please enter you signing/private key: ")
 
 
     preloads = [
@@ -156,6 +146,7 @@ def uploadSetup(upload, config):
         ('.main.upload.data', odict(value=data)),
         ('.main.upload.did', odict(value=config["did"])),
         ('.main.upload.sk', odict(value=sk)),
+        ('.main.upload.type', odict(value=upload)),
     ]
 
     return preloads
@@ -192,16 +183,11 @@ def rotateSetup(rotate, config):
     return preloads
 
 
-def retrieveSetup(retrieve, config, consensus=None):
-    if consensus is None:
-        if "consensus" not in config or config["consensus"] == "":
-            raise ValidationError('Consensus level must be specified either via the cli or the config file.')
-        consensus = config["consensus"]
-
+def retrieveSetup(retrieve, config):
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
         ('.main.upload.did', odict(value=config["did"])),
-        ('.main.upload.consensus', odict(value=consensus))
+        ('.main.upload.type', odict(value=retrieve))
     ]
 
     return preloads

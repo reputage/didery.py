@@ -31,8 +31,7 @@ def getAllHistories(url="http://localhost:8080"):
 
 def getDidHistory(did, url="http://localhost:8080"):
     url_parts = urlparse(url)
-
-    path = "history/" + did
+    path = "{0}/{1}".format("history", did)
 
     response = patronHelper(scheme=url_parts.scheme, host=url_parts.netloc, path=path)
 

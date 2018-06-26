@@ -4,6 +4,7 @@ from ioflo.base import doify
 
 
 from ..lib import historying as hist
+from ..lib import otping as otp
 
 
 console = getConsole()
@@ -22,12 +23,12 @@ def upload(self):
     console.terse("Servers: {}\n".format(self.servers.value))
     console.terse("Data: {}\n".format(self.data.value))
     console.terse("\n")
+    result = ""
 
     if self.type.value == "history":
         result = hist.postHistory(self.data.value, self.sk.value, self.servers.value[0])
-    else:
-        # TODO build post otp blob request
-        result = ""
+    elif self.type.value == "otp":
+        result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value[0])
 
     console.terse("Result: {}\n\n".format(result))
 
@@ -65,11 +66,11 @@ def retrieval(self):
     console.terse("Servers: {}\n".format(self.servers.value))
     console.terse("DID: {}\n".format(self.did.value))
     console.terse("\n")
+    result = ""
 
     if self.type.value == "history":
         result = hist.getDidHistory(self.did.value, self.servers.value[0])
-    else:
-        # TODO build get otp blob request
-        result = ""
+    elif self.type.value == "otp":
+        result = otp.getOtpBlob(self.did.value, self.servers.value[0])
 
     console.terse("Result: {}\n\n".format(result))

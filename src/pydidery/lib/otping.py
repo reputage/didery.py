@@ -25,16 +25,67 @@ def patronHelper(method="GET", scheme=u'', host="localhost", port=None, path="bl
 
 
 def getAllOtpBlobs(url="http://localhost:8080"):
-    pass
+    url_parts = urlparse(url)
+
+    response = patronHelper(scheme=url_parts.scheme, host=url_parts.netloc)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            return si.value
 
 
 def getOtpBlob(did, url="http://localhost:8080"):
-    pass
+    url_parts = urlparse(url)
+    path = "{0}/{1}".format("blob", did)
+
+    response = patronHelper(scheme=url_parts.scheme, host=url_parts.netloc, path=path)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            return si.value
 
 
 def postOtpBlob(data, sk, url="http://localhost:8080"):
-    pass
+    url_parts = urlparse(url)
+
+    data['changed'] = str(arrow.utcnow())
+
+    bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
+
+    headers = {
+        "Signature": 'signer="{0}"'.format(gen.signResource(bdata, gen.key64uToKey(sk)))
+    }
+
+    response = patronHelper(method="POST", scheme=url_parts.scheme, host=url_parts.netloc, data=data, headers=headers)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            return si.value
 
 
-def putOtpBlob(did, data, sk, psk, url="http://localhost:8080"):
-    pass
+def putOtpBlob(did, data, sk, url="http://localhost:8080"):
+    url_parts = urlparse(url)
+    path = "{0}/{1}".format("blob", did)
+
+    data['changed'] = str(arrow.utcnow())
+
+    bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
+
+    headers = {
+        "Signature": 'signer="{0}"'.format(gen.signResource(bdata, gen.key64uToKey(sk)))
+    }
+
+    response = patronHelper(method="PUT", scheme=url_parts.scheme, host=url_parts.netloc, path=path, data=data,
+                            headers=headers)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            return si.value

@@ -104,21 +104,21 @@ def parseDataFile(file, dtype):
     data = {}
 
     if dtype == "history":
-        data = parseJsonFile(file, ["history"])
+        data = parseJsonFile(file, ["history"])["history"]
 
         for field in ["id", "signer", "signers"]:
-            if field not in data["history"]:
+            if field not in data:
                 raise ValidationError("Missing required field {}".format(field))
 
     if dtype == "otp":
-        data = parseJsonFile(file, ["otp"])
+        data = parseJsonFile(file, ["otp"])["otp"]
 
         for field in ["id", "blob"]:
-            if field not in data["otp"]:
+            if field not in data:
                 raise ValidationError("Missing required field {}".format(field))
 
     # Check for valid did
-    validateDid(data[dtype]["id"])
+    validateDid(data["id"])
 
     return data
 

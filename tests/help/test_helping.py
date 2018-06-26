@@ -30,40 +30,30 @@ async def helper():
 
 async def httpPost(url, data, headers):
     async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
-        async with session.post(url, json=data, headers=headers) as response:
+        async with session.post(url, data=data, headers=headers) as response:
             status = response.status
             data = await response.text()
 
             return status, data
 
 
-def paetronHelper(method="GET", host="localhost", port=8080, path="history", headers=None, data=None, body=b''):
+def patronHelper(method="GET", host="localhost", port=8080, path="history", headers=None, data=None, body=b''):
     result = yield from h.httpRequest(method, host=host, port=port, path=path, headers=headers, data=data, body=body)
 
-    if result['status'] != 200:
-        print(result)
-        if result['errored']:
-            emsg = result['error']
-        else:
-            emsg = "unknown"
-        raise httping.HTTPError(result['status'],
-                                title="Backend Validation Error",
-                                detail="Error backend validation. {}".format(emsg))
-
-    return result['body'].decode()
+    return result['body'].decode(), result['status']
 
 
 def testHttpRequest():
     history, vk, sk, pvk, psk = gen.historyGen()
     history['changed'] = str(arrow.utcnow())
-    did = history['id']
+    body = json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
     url = "http://localhost:8080/history/"
     headers = {
-        "Signature": 'signer="{0}"'.format(gen.signResource(json.dumps(history).encode('utf-8'), sk))
+        "Signature": 'signer="{0}"'.format(gen.signResource(body, gen.key64uToKey(sk)))
     }
 
     loop = asyncio.get_event_loop()
-    test = loop.run_until_complete(httpPost(url, history, headers))
+    test = loop.run_until_complete(httpPost(url, body, headers))
 
     print(test)
 
@@ -75,7 +65,17 @@ def testHttpRequest():
     assert False
 
 
-def testPaetron():
+def handleAsync(f):
+    response = f()
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            return si.value
+
+
+def testPatron():
     # app = falcon.API(middleware=[routing.CORSMiddleware()])
     # routing.loadEndPoints(app, store=self.store)
     #
@@ -88,33 +88,77 @@ def testPaetron():
     #     timeout=0.5,
     # )
 
-    response = paetronHelper()
+    # get all histories
+    response = patronHelper()
 
     while True:
         try:
             next(response)
         except StopIteration as si:
-            print("Final: " + si.value)
+            # print("Final: " + si.value)
             break
 
+    # create a history
     history, vk, sk, pvk, psk = gen.historyGen()
     history['changed'] = str(arrow.utcnow())
     body = json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    did = history['id']
     path = "history/"
     headers = {
         "Signature": 'signer="{0}"'.format(gen.signResource(body, gen.key64uToKey(sk)))
     }
 
-    print(body)
-    response = paetronHelper("POST", path=path, data=history, headers=headers)
+    response = patronHelper("POST", path=path, data=history, headers=headers)
 
     while True:
         try:
             next(response)
         except StopIteration as si:
-            print("Final: " + str(si))
+            # print("Final: " + str(si))
             break
         except HTTPError as er:
-            print(er.detail)
+            # print(er.detail)
+            pass
+
+    # get a single history
+    path = "history/" + did
+
+    response = patronHelper(path=path)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            print("Final: " + str(si.value))
+            break
+
+    ppvk, ppsk = gen.keyGen()
+    history['changed'] = str(arrow.utcnow())
+    history['signer'] = 1
+    history['signers'].append(ppvk)
+    body = json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    print()
+    print(body)
+
+    headers = {
+        "Signature": 'signer="{0}"; rotation="{1}"'.format(
+            gen.signResource(body, gen.key64uToKey(sk)),
+            gen.signResource(body, gen.key64uToKey(psk))
+        )
+    }
+
+    response = patronHelper("PUT", path=path, data=history, headers=headers)
+
+    while True:
+        try:
+            next(response)
+        except StopIteration as si:
+            print("TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("Final: " + str(si.value))
+            break
 
     assert False
+
+
+b'{"id":"did:dad:QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","signer":1,"signers":["QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","Mb1bxpjJJy6Dw9mNFvX7FnjMF6vgEDGJkMbLgQUufP8=","mJZOsbpKBm_dKGLIfygdLTOaarYycrmFui-kZ4jbyAc="],"changed":"2018-06-22T23:23:00.630020+00:00"}'
+b'{"id":"did:dad:QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","signer":1,"signers":["QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","Mb1bxpjJJy6Dw9mNFvX7FnjMF6vgEDGJkMbLgQUufP8=","mJZOsbpKBm_dKGLIfygdLTOaarYycrmFui-kZ4jbyAc="],"changed":"2018-06-22T23:23:00.630020+00:00"}'

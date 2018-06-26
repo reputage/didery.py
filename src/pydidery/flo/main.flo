@@ -12,7 +12,7 @@ house main
 	framer upload be inactive via .main.upload
 	    frame upload
 	        print starting upload
-	        do upload data at enter
+	        do upload at enter
 
 	framer rotate be inactive via .main.rotate
 	    frame rotate

@@ -144,7 +144,6 @@ def uploadSetup(upload, config):
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
         ('.main.upload.data', odict(value=data)),
-        ('.main.upload.did', odict(value=config["did"])),
         ('.main.upload.sk', odict(value=sk)),
         ('.main.upload.type', odict(value=upload)),
     ]
@@ -173,11 +172,11 @@ def rotateSetup(rotate, config):
         data["signer"] = int(data["signer"]) + 1
 
     preloads = [
-        ('.main.upload.servers', odict(value=config["servers"])),
-        ('.main.upload.data', odict(value=data)),
-        ('.main.upload.did', odict(value=config["did"])),
-        ('.main.upload.sk', odict(value=csk)),
-        ('.main.upload.psk', odict(value=rsk))
+        ('.main.rotate.servers', odict(value=config["servers"])),
+        ('.main.rotate.data', odict(value=data)),
+        ('.main.rotate.did', odict(value=config["did"])),
+        ('.main.rotate.sk', odict(value=csk)),
+        ('.main.rotate.psk', odict(value=rsk))
     ]
 
     return preloads
@@ -185,9 +184,9 @@ def rotateSetup(rotate, config):
 
 def retrieveSetup(retrieve, config):
     preloads = [
-        ('.main.upload.servers', odict(value=config["servers"])),
-        ('.main.upload.did', odict(value=config["did"])),
-        ('.main.upload.type', odict(value=retrieve))
+        ('.main.retrieve.servers', odict(value=config["servers"])),
+        ('.main.retrieve.did', odict(value=config["did"])),
+        ('.main.retrieve.type', odict(value=retrieve))
     ]
 
     return preloads

@@ -13,7 +13,6 @@ console = getConsole()
 @doify('Upload', ioinits=odict(
     servers="",
     data="",
-    did="",
     sk="",
     type="",
     test=""

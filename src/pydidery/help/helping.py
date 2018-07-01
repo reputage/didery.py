@@ -45,6 +45,34 @@ def validateDid(did, method="dad"):
     return did, keystr
 
 
+def verify(sig, msg, vk):
+    """
+    Returns True if signature sig of message msg is verified with
+    verification key vk Otherwise False
+    All of sig, msg, vk are bytes
+    """
+    try:
+        result = libnacl.crypto_sign_open(sig + msg, vk)
+    except Exception as ex:
+        return False
+    return True if result else False
+
+
+def verify64u(signature, message, verkey):
+    """
+    Returns True if signature is valid for message with respect to verification
+    key verkey
+
+    signature and verkey are encoded as unicode base64 url-file strings
+    and message is unicode string as would be the case for a json object
+
+    """
+    sig = gen.key64uToKey(signature)
+    vk = gen.key64uToKey(verkey)
+
+    return verify(sig, message, vk)
+
+
 def parseJsonFile(file, requireds=()):
     """
         Returns deserialized version of data string if data is correctly formed.
@@ -202,3 +230,22 @@ def httpRequest(method=u'GET',
     # response.get('status')
     # response.get('body').decode('utf-8')
     return response
+
+
+def awaitAsync(generators):
+    values = []
+
+    while True:
+        remove = []
+        for i, generator in enumerate(generators):
+            try:
+                next(generator)
+            except StopIteration as si:
+                values.append(si.value)
+                remove.append(i)
+
+        for val in remove:
+            generators.pop(val)
+
+        if len(generators) == 0:
+            return values

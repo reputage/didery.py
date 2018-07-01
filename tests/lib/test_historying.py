@@ -21,6 +21,7 @@ did = history['id']
 def testGetAllHistories():
     result = hist.getAllHistories()
 
+    print(result)
     assert result[0] == '{}'
 
 
@@ -41,7 +42,7 @@ def testPutHistory():
     history['signer'] = 1
     history['signers'].append(vk3)
 
-    result = hist.putHistory(did,history, sk1, sk2)
+    result = hist.putHistory(did, history, sk1, sk2)
 
     print(result)
     assert result[1] == 200

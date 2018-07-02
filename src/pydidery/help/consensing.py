@@ -6,6 +6,8 @@ except ImportError:
 from .helping import verify64u, validateDid
 
 MAJORITY = 2 / 3
+RESPONSE = 0
+STATUS = 1
 
 
 def validateHistorySignatures(data):
@@ -17,12 +19,19 @@ def validateHistorySignatures(data):
         return None, None
 
     for datum in data:
+        if datum[STATUS] != 200:
+            continue
+
+        datum = json.loads(datum[RESPONSE])
+
         history = datum["history"]
-        sigIndex = len(datum["signatures"]) - 1
         keyIndex = int(history["signer"])
 
         vk = history["signers"][keyIndex]
-        signature = datum["signatures"][sigIndex]
+        if "rotation" in datum["signatures"]:
+            signature = datum["signatures"]["rotation"]
+        else:
+            signature = datum["signatures"]["signer"]
 
         if verify64u(signature, json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode(), vk):
             num_valid += 1
@@ -47,6 +56,11 @@ def validateOtpSignatures(data):
         return None, None
 
     for datum in data:
+        if datum[STATUS] != 200:
+            continue
+
+        datum = json.loads(datum[RESPONSE])
+
         otp = datum["otp_data"]
         did, vk = validateDid(otp["id"])
         signature = datum["signature"][0]

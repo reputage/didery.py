@@ -25,9 +25,9 @@ def upload(self):
     result = ""
 
     if self.type.value == "history":
-        result = hist.postHistory(self.data.value, self.sk.value, self.servers.value[0])
+        result = hist.postHistory(self.data.value, self.sk.value, self.servers.value)
     elif self.type.value == "otp":
-        result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value[0])
+        result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value)
 
     console.terse("Result: {}\n\n".format(result))
 
@@ -47,7 +47,7 @@ def rotation(self):
     console.terse("\n")
 
     if self.servers.value is not None:
-        result = hist.putHistory(self.did.value, self.data.value, self.sk.value, self.psk.value, self.servers.value[0])
+        result = hist.putHistory(self.did.value, self.data.value, self.sk.value, self.psk.value, self.servers.value)
     else:
         result = ""
 
@@ -68,8 +68,8 @@ def retrieval(self):
     result = ""
 
     if self.type.value == "history":
-        result = hist.getDidHistory(self.did.value, self.servers.value[0])
+        result = hist.getDidHistory(self.did.value, self.servers.value)
     elif self.type.value == "otp":
-        result = otp.getOtpBlob(self.did.value, self.servers.value[0])
+        result = otp.getOtpBlob(self.did.value, self.servers.value)
 
     console.terse("Result: {}\n\n".format(result))

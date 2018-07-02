@@ -30,21 +30,22 @@ def patronHelper(method="GET", path="blob", headers=None, data=None):
 
 def getOtpBlob(did, urls=None):
     if urls is None:
-        urls = ["http://localhost:8080/history", "http://localhost:8000/history"]
+        urls = ["http://localhost:8080", "http://localhost:8000"]
 
     generators = []
 
     for url in urls:
-        generators.append(patronHelper(path="{0}/{1}".format(url, did)))
+        url = "{0}/{1}/{2}".format(url, "blob", did)
+        generators.append(patronHelper(path=url))
 
     data = h.awaitAsync(generators)
 
-    return consensing.consense(data, "otp")
+    return consensing.consense(data[0], "otp")
 
 
 def postOtpBlob(data, sk, urls=None):
     if urls is None:
-        urls = ["http://localhost:8080/history", "http://localhost:8000/history"]
+        urls = ["http://localhost:8080", "http://localhost:8000"]
 
     generators = []
     data['changed'] = str(arrow.utcnow())
@@ -54,6 +55,7 @@ def postOtpBlob(data, sk, urls=None):
     }
 
     for url in urls:
+        url = "{0}/{1}".format(url, "blob")
         generators.append(patronHelper(method="POST", path=url, data=data, headers=headers))
 
     return h.awaitAsync(generators)
@@ -61,7 +63,7 @@ def postOtpBlob(data, sk, urls=None):
 
 def putOtpBlob(did, data, sk, urls=None):
     if urls is None:
-        urls = ["http://localhost:8080/history", "http://localhost:8000/history"]
+        urls = ["http://localhost:8080", "http://localhost:8000"]
 
     generators = []
     data['changed'] = str(arrow.utcnow())
@@ -71,6 +73,7 @@ def putOtpBlob(did, data, sk, urls=None):
     }
 
     for url in urls:
-        generators.append(patronHelper(method="PUT", path="{0}/{1}".format(url, did), data=data, headers=headers))
+        url = "{0}/{1}/{2}".format(url, "blob", did)
+        generators.append(patronHelper(method="PUT", path=url, data=data, headers=headers))
 
     return h.awaitAsync(generators)

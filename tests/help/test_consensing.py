@@ -14,7 +14,7 @@ VK2 = 3
 SK2 = 4
 
 
-def testValidateSignatures():
+def testvalidateHistorySignatures():
     VALID_DATA = 0
     SIG_COUNTS = 1
     datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
@@ -25,18 +25,18 @@ def testValidateSignatures():
     bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     datum1_sig = gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
     data = [
-        {
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                datum1_sig
-            ]
-        }
+            "signatures": {
+                "signer": datum1_sig
+            }
+        }), 200)
     ]
 
     result = consensing.validateHistorySignatures(data)
@@ -44,18 +44,18 @@ def testValidateSignatures():
     assert result[SIG_COUNTS] is None
 
     # Test empty data
-    result = consensing.validateHistorySignatures({})
+    result = consensing.validateHistorySignatures([])
     assert result[VALID_DATA] is None
     assert result[SIG_COUNTS] is None
 
     # Test that majority of valid data passes
     data.append(
-        {
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                datum1_sig
-            ]
-        }
+            "signatures": {
+                "signer": datum1_sig
+            }
+        }), 200)
     )
 
     result = consensing.validateHistorySignatures(data)
@@ -71,27 +71,27 @@ def testValidateSignatures():
     bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     datum1_sig = gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
     data = [
-        {
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory2, gen.key64uToKey(datum1[SK2]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                datum1_sig
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": datum1_sig
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                datum1_sig
-            ]
-        }
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": datum1_sig
+            }
+        }), 200)
     ]
 
     result = consensing.validateHistorySignatures(data)
@@ -101,12 +101,12 @@ def testValidateSignatures():
 
     # Test all valid signatures, but conflicting data
     datum2_sig = gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-    data[0] = {
+    data[0] = (json.dumps({
         "history": datum2[HISTORY],
-        "signatures": [
-            datum2_sig
-        ]
-    }
+        "signatures": {
+            "signer": datum2_sig
+        }
+    }), 200)
 
     result = consensing.validateHistorySignatures(data)
     assert result[VALID_DATA] is not None
@@ -116,7 +116,7 @@ def testValidateSignatures():
     assert result[SIG_COUNTS][datum2_sig] == 1
 
 
-def testConsenseHistory():
+def testConsense():
     datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
     datum2 = gen.historyGen()
 
@@ -128,84 +128,84 @@ def testConsenseHistory():
     bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     data = [
-        {
+        (json.dumps({
             "history": datum2[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        }
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200)
     ]
 
     assert consensing.consense(data) is not None
 
     # Test incomplete majority
     data = [
-        {
+        (json.dumps({
             "history": datum2[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+            }
+        }), 200),
+        (json.dumps({
             "history": gen.historyGen()[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum2[SK1]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum2[SK1]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        }
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200)
     ]
 
     assert consensing.consense(data) is None
 
     # Test all equal
     data = [
-        {
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        },
-        {
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200),
+        (json.dumps({
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
-        }
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
+        }), 200)
     ]
 
     assert consensing.consense(data) == {
             "history": datum1[HISTORY],
-            "signatures": [
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            ]
+            "signatures": {
+                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+            }
         }

@@ -16,11 +16,11 @@ $ pip install -e didery.py/
 ## Usage
 To see the command line options use the command below:
 ```
-$ didery.py --help
+$ didery --help
 ```
 
 ```
-Usage: didery.py [OPTIONS] CONFIG
+Usage: didery [OPTIONS] CONFIG
 
 Options:
   --upload [otp|history]         Choose the type of upload 'otp' or 'history'.

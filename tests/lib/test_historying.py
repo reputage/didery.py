@@ -17,25 +17,20 @@ history, vk1, sk1, vk2, sk2 = gen.historyGen()
 vk3, sk3 = gen.keyGen()
 did = history['id']
 
-
-def testGetAllHistories():
-    result = hist.getAllHistories()
-
-    print(result)
-    assert result[0] == '{}'
+url1, url2 = "http://localhost:8080", "http://localhost:8000"
 
 
 def testPostHistory():
     result = hist.postHistory(history, sk1)
 
-    assert result[1] == 201
+    assert result[url1][1] == 201
+    assert result[url2][1] == 201
 
 
 def testGetDidHistory():
     result = hist.getDidHistory(did)
 
-    assert result[1] == 200
-    assert json.loads(result[0])['history'] == history
+    assert result['history'] == history
 
 
 def testPutHistory():
@@ -44,5 +39,7 @@ def testPutHistory():
 
     result = hist.putHistory(did, history, sk1, sk2)
 
-    print(result)
-    assert result[1] == 200
+    assert result[url1][1] == 200
+    assert json.loads(result[url1][0])["history"] == history
+    assert result[url2][1] == 200
+    assert json.loads(result[url2][0])["history"] == history

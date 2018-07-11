@@ -32,11 +32,11 @@ def getDidHistory(did, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
 
     for url in urls:
-        url = "{0}/{1}/{2}".format(url, "history", did)
-        generators.append(patronHelper(path=url))
+        endpoint = "{0}/{1}/{2}".format(url, "history", did)
+        generators[url] = patronHelper(path=endpoint)
 
     data = h.awaitAsync(generators)
 
@@ -47,7 +47,7 @@ def postHistory(data, sk, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
@@ -55,8 +55,8 @@ def postHistory(data, sk, urls=None):
     }
 
     for url in urls:
-        url = "{0}/{1}".format(url, "history")
-        generators.append(patronHelper(method="POST", path=url, data=data, headers=headers))
+        endpoint = "{0}/{1}".format(url, "history")
+        generators[url] = patronHelper(method="POST", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -65,7 +65,7 @@ def putHistory(did, data, sk, psk, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
@@ -76,7 +76,7 @@ def putHistory(did, data, sk, psk, urls=None):
     }
 
     for url in urls:
-        url = "{0}/{1}/{2}".format(url, "history", did)
-        generators.append(patronHelper(method="PUT", path=url, data=data, headers=headers))
+        endpoint = "{0}/{1}/{2}".format(url, "history", did)
+        generators[url] = patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)

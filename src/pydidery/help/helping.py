@@ -233,15 +233,15 @@ def httpRequest(method=u'GET',
 
 
 def awaitAsync(generators):
-    values = []
+    values = {}
 
     while True:
         remove = []
-        for i, generator in enumerate(generators):
+        for i, generator in generators.items():
             try:
                 next(generator)
             except StopIteration as si:
-                values.append(si.value)
+                values[i] = si.value
                 remove.append(i)
 
         for val in remove:

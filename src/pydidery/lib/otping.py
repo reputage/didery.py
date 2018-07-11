@@ -32,22 +32,22 @@ def getOtpBlob(did, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
 
     for url in urls:
-        url = "{0}/{1}/{2}".format(url, "blob", did)
-        generators.append(patronHelper(path=url))
+        endpoint = "{0}/{1}/{2}".format(url, "blob", did)
+        generators[url] = patronHelper(path=endpoint)
 
     data = h.awaitAsync(generators)
 
-    return consensing.consense(data[0], "otp")
+    return consensing.consense(data, "otp")
 
 
 def postOtpBlob(data, sk, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
@@ -55,8 +55,8 @@ def postOtpBlob(data, sk, urls=None):
     }
 
     for url in urls:
-        url = "{0}/{1}".format(url, "blob")
-        generators.append(patronHelper(method="POST", path=url, data=data, headers=headers))
+        endpoint = "{0}/{1}".format(url, "blob")
+        generators[url] = patronHelper(method="POST", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -65,7 +65,7 @@ def putOtpBlob(did, data, sk, urls=None):
     if urls is None:
         urls = ["http://localhost:8080", "http://localhost:8000"]
 
-    generators = []
+    generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
@@ -73,7 +73,7 @@ def putOtpBlob(did, data, sk, urls=None):
     }
 
     for url in urls:
-        url = "{0}/{1}/{2}".format(url, "blob", did)
-        generators.append(patronHelper(method="PUT", path=url, data=data, headers=headers))
+        endpoint = "{0}/{1}/{2}".format(url, "blob", did)
+        generators[url] = patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)

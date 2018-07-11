@@ -65,7 +65,14 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 def main(upload, rotate, retrieve, v, config):
     verbose = v if v <= 4 else 4
-    preloads = []
+    preloads = [
+        ('.main.upload.verbosity', odict(value=verbose)),
+        ('.main.retrieve.verbosity', odict(value=verbose)),
+        ('.main.rotate.verbosity', odict(value=verbose)),
+        ('.main.upload.start', odict(value=True if upload else False)),
+        ('.main.retrieve.start', odict(value=True if retrieve else False)),
+        ('.main.rotate.start', odict(value=True if rotate else False))
+    ]
 
     if upload and rotate or upload and retrieve or rotate and retrieve:
         click.echo("Cannot combine --upload, --rotate, or --retrieve")
@@ -106,7 +113,7 @@ def main(upload, rotate, retrieve, v, config):
                         mode='',
                         username='',
                         password='',
-                        verbose=verbose,
+                        verbose=0,
                         consolepath='',
                         statistics=False,
                         preloads=preloads)

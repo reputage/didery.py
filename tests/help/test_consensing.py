@@ -14,6 +14,28 @@ VK2 = 3
 SK2 = 4
 
 
+# def test():
+#     datum = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
+#
+#     # Test Invalid signature causing incomplete majority
+#     bHistory1 = json.dumps(datum[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
+#     datum_sig = gen.signResource(bHistory1, gen.key64uToKey(datum[SK1]))
+#     data = json.dumps({
+#             "history": datum[HISTORY],
+#             "signatures": {
+#                 "signer": datum_sig
+#             }
+#         })
+#
+#     hist = consensing.HistoryData(data)
+#
+#     assert hist.did == datum[HISTORY]["id"]
+#
+#     hist.did = ""
+#     assert hist.did == ""
+#     assert hist.body["id"] == ""
+
+
 def testvalidateHistorySignatures():
     VALID_DATA = 0
     SIG_COUNTS = 1

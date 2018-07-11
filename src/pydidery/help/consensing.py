@@ -10,44 +10,46 @@ RESPONSE = 0
 STATUS = 1
 
 
-def validateHistorySignatures(data):
-    valid_data = {}
-    sig_counts = {}
-    num_valid = 0
+class DideryData:
+    def __init__(self, data):
+        self.bdata = b'{}'
+        self.data = {}
+        self.body = None
+        self.signature = ""
+        self.vk = ""
+        self.did = ""
 
-    if not data:
-        return None, None
 
-    for datum in data:
-        if datum[STATUS] != 200:
-            continue
+class HistoryData(DideryData):
+    def __init__(self, data):
+        DideryData.__init__(self, data)
 
-        datum = json.loads(datum[RESPONSE])
+        self.bdata = data
+        self.data = json.loads(data)
+        self.body = self.data["history"]
+        self.vk = self.body["signers"][int(self.body["signer"])]
+        self.did = self.body["id"]
 
-        history = datum["history"]
-        keyIndex = int(history["signer"])
-
-        vk = history["signers"][keyIndex]
-        if "rotation" in datum["signatures"]:
-            signature = datum["signatures"]["rotation"]
+        if "rotation" in self.data["signatures"]:
+            self.signature = self.data["signatures"]["rotation"]
         else:
-            signature = datum["signatures"]["signer"]
-
-        if verify64u(signature, json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode(), vk):
-            num_valid += 1
-            # keep track of data that belongs to signature
-            valid_data[signature] = datum
-            # Count number of times the signature has been seen
-            sig_counts[signature] = sig_counts.get(signature, 0) + 1
-
-    # check that a majority of signatures are valid
-    if len(data) * MAJORITY > num_valid:
-        return None, None
-    else:
-        return valid_data, sig_counts
+            self.signature = self.data["signatures"]["signer"]
 
 
-def validateOtpSignatures(data):
+class OtpData(DideryData):
+    def __init__(self, data):
+        DideryData.__init__(self, data)
+
+        self.bdata = data
+        self.data = json.loads(data)
+        self.body = self.data["otp_data"]
+        did, vk = validateDid(self.body["id"])
+        self.signature = self.data["signature"]["signer"]
+        self.vk = vk
+        self.did = did
+
+
+def validateSignatures(data, dtype):
     valid_data = {}
     sig_counts = {}
     num_valid = 0
@@ -55,22 +57,21 @@ def validateOtpSignatures(data):
     if not data:
         return None, None
 
-    for datum in data:
+    for url, datum in data.items():
         if datum[STATUS] != 200:
             continue
 
-        datum = json.loads(datum[RESPONSE])
+        if dtype == "history":
+            datum = HistoryData(datum[RESPONSE])
+        else:
+            datum = OtpData(datum[RESPONSE])
 
-        otp = datum["otp_data"]
-        did, vk = validateDid(otp["id"])
-        signature = datum["signature"][0]
-
-        if verify64u(signature, json.dumps(otp, ensure_ascii=False, separators=(',', ':')).encode(), vk):
+        if verify64u(datum.signature, json.dumps(datum.body, ensure_ascii=False, separators=(',', ':')).encode(), datum.vk):
             num_valid += 1
             # keep track of data that belongs to signature
-            valid_data[signature] = datum
+            valid_data[datum.signature] = datum.data
             # Count number of times the signature has been seen
-            sig_counts[signature] = sig_counts.get(signature, 0) + 1
+            sig_counts[datum.signature] = sig_counts.get(datum.signature, 0) + 1
 
     # check that a majority of signatures are valid
     if len(data) * MAJORITY > num_valid:
@@ -89,10 +90,8 @@ def consense(data, dtype="history"):
     :param dtype: string specifying to consense otp or history data
     :return: history dict if consensus is reached else None
     """
-    if dtype == "history":
-        valid_data, sig_counts = validateHistorySignatures(data)
-    else:
-        valid_data, sig_counts = validateOtpSignatures(data)
+
+    valid_data, sig_counts = validateSignatures(data, dtype)
 
     # Not enough valid signatures
     if valid_data is None:

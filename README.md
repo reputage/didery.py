@@ -35,18 +35,15 @@ Options:
 The CLI requires a path to a config file with the data shown below.  Because of the sensitive nature of the data signing keys should not be stored in this file and will be deleted upon exit of didery.py.  **DO NOT** enter a signing key **UNLESS** it is required for the current task.
 ```json
 {
-	"servers": [],
+	"servers": ["http://localhost:8080", "http://localhost:8000"],
 	"did":""
 }
 ``` 
 **"servers"** [list] _required_
- - A list of server address strings.  This must be supplied so the library knows what servers to broadcast and poll from.
+ - A list of server address strings.  This must be supplied so the library knows what servers to broadcast and poll from. To determine if there is a consensus on polling a 2/3 of the servers must return matching responses.
  
 **"did"** [string] _required_
 - [Decentralized Identifier](https://w3c-ccg.github.io/did-spec/).  This is needed to locate or store a resource.
-
-**"consensus"** [int] _optional_  
-- The percent at which consensus is reached.  Value should be between 0 and 100.  You can also use the command line option -c, --consensus instead of this field.  Didery.py will default to the cli value when given both options.
 
 ### Data File
 For certain commands it is necessary to supply a data file.  The file should be json formatted and will contain either the rotation history or the [one time pad](https://en.wikipedia.org/wiki/One-time_pad)(otp) encrypted blob. The data file is required for the following options:

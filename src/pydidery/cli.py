@@ -159,16 +159,12 @@ def uploadSetup(upload, config):
 
 
 def rotateSetup(rotate, config):
-    if click.confirm("Do you have a data file?"):
-        path = click.prompt(
-            "Please enter a path to the data file: ",
-            type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-        )
+    path = click.prompt(
+        "Please enter a path to the data file: ",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+    )
 
-        data = h.parseDataFile(path, "history")
-    else:
-        # TODO: Query didery servers for current data using did in config
-        data = {"signers": []}
+    data = h.parseDataFile(path, "history")
 
     csk = click.prompt("Please enter your current signing/private key: ")
     rsk = click.prompt("Please enter the signing/private key you are rotating to: ")
@@ -181,7 +177,7 @@ def rotateSetup(rotate, config):
     preloads = [
         ('.main.rotate.servers', odict(value=config["servers"])),
         ('.main.rotate.data', odict(value=data)),
-        ('.main.rotate.did', odict(value=config["did"])),
+        ('.main.rotate.did', odict(value=data["id"])),
         ('.main.rotate.sk', odict(value=csk)),
         ('.main.rotate.psk', odict(value=rsk))
     ]
@@ -190,9 +186,16 @@ def rotateSetup(rotate, config):
 
 
 def retrieveSetup(retrieve, config):
+    did = click.prompt(
+        "Please enter a did for the data you're retrieving: ",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+    )
+
+    h.validateDid(did)
+
     preloads = [
         ('.main.retrieve.servers', odict(value=config["servers"])),
-        ('.main.retrieve.did', odict(value=config["did"])),
+        ('.main.retrieve.did', odict(value=did)),
         ('.main.retrieve.type', odict(value=retrieve))
     ]
 

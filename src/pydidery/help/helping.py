@@ -117,10 +117,7 @@ def parseConfigFile(file):
     :param file: click.Path object
     :return: parsed configuration data
     """
-    data = parseJsonFile(file, ["servers", "did"])
-
-    # Check for valid did
-    validateDid(data["did"])
+    data = parseJsonFile(file, ["servers"])
 
     if not isinstance(data["servers"], list):
         raise ValidationError('"servers" field must be a list.')

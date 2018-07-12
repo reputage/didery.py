@@ -35,23 +35,45 @@ Command line interface for didery.py library.  Path to config file containing se
 """
 @click.command()
 @click.option(
-    '--upload',
+    '--incept',
     multiple=False,
-    type=click.Choice(['otp', 'history']),
-    help="Choose the type of upload 'otp' or 'history'."
+    is_flag=True,
+    default=False,
+    help="Send a key rotation history inception event."
+)
+@click.option(
+    '--upload',
+    is_flag=True,
+    default=False,
+    help="Upload a new otp encrypted private key."
 )
 @click.option(
     '--rotate',
     multiple=False,
     is_flag=True,
     default=False,
-    help='Send rotation event to didery servers.'
+    help='Rotate public/private key pairs.'
+)
+@click.option(
+    '--update',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help='Update otp encrypted private key.'
 )
 @click.option(
     '--retrieve',
     multiple=False,
-    type=click.Choice(['otp', 'history']),
-    help="Retrieve 'otp' or 'history' data."
+    is_flag=True,
+    default=False,
+    help="Retrieve key rotation history."
+)
+@click.option(
+    '--download',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help="Download otp encrypted private key."
 )
 @click.option(
     '-v',
@@ -63,32 +85,48 @@ Command line interface for didery.py library.  Path to config file containing se
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(upload, rotate, retrieve, v, config):
+def main(incept, upload, rotate, update, retrieve, download, v, config):
     verbose = v if v <= 4 else 4
     preloads = [
+        ('.main.incept.verbosity', odict(value=verbose)),
         ('.main.upload.verbosity', odict(value=verbose)),
-        ('.main.retrieve.verbosity', odict(value=verbose)),
         ('.main.rotate.verbosity', odict(value=verbose)),
+        ('.main.update.verbosity', odict(value=verbose)),
+        ('.main.retrieve.verbosity', odict(value=verbose)),
+        ('.main.download.verbosity', odict(value=verbose)),
+        ('.main.incept.start', odict(value=True if incept else False)),
         ('.main.upload.start', odict(value=True if upload else False)),
+        ('.main.rotate.start', odict(value=True if rotate else False)),
+        ('.main.update.start', odict(value=True if update else False)),
         ('.main.retrieve.start', odict(value=True if retrieve else False)),
-        ('.main.rotate.start', odict(value=True if rotate else False))
+        ('.main.download.start', odict(value=True if download else False))
     ]
 
-    if upload and rotate or upload and retrieve or rotate and retrieve:
-        click.echo("Cannot combine --upload, --rotate, or --retrieve")
+    options = [incept, upload, rotate, update, retrieve, download]
+    if options.count(True) != 1:
+        click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, or --download")
         return
 
     configData = h.parseConfigFile(config)
 
     try:
+        if incept:
+            preloads.extend(inceptSetup(configData))
+
         if upload:
-            preloads.extend(uploadSetup(upload, configData))
+            preloads.extend(uploadSetup(configData))
 
         if rotate:
-            preloads.extend(rotateSetup(rotate, configData))
+            preloads.extend(rotateSetup(configData))
+
+        if update:
+            preloads.extend(updateSetup(configData))
 
         if retrieve:
-            preloads.extend(retrieveSetup(retrieve, configData))
+            preloads.extend(retrieveSetup(configData))
+
+        if download:
+            preloads.extend(downloadSetup(configData))
 
     except ValidationError as ex:
         click.echo(str(ex))
@@ -119,46 +157,49 @@ def main(upload, rotate, retrieve, v, config):
                         preloads=preloads)
 
 
-def uploadSetup(upload, config):
-    data = {}
-    sk = None
-
-    if upload == "otp":
+def inceptSetup(config):
+    if click.confirm("Would you like to generate key pairs?"):
+        history, sk = historyInit()
+        data = history
+    else:
         path = click.prompt(
             "Please enter a path to the data file: ",
             type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
         )
 
-        data = h.parseDataFile(path, upload)
+        data = h.parseDataFile(path, "history")
 
         sk = click.prompt("Please enter you signing/private key: ")
 
-    if upload == "history":
-        if click.confirm("Would you like to generate key pairs?"):
-            history, sk = historyInit()
-            data = history
-        else:
-            path = click.prompt(
-                "Please enter a path to the data file: ",
-                type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-            )
-
-            data = h.parseDataFile(path, upload)
-
-            sk = click.prompt("Please enter you signing/private key: ")
-
-
     preloads = [
-        ('.main.upload.servers', odict(value=config["servers"])),
-        ('.main.upload.data', odict(value=data)),
-        ('.main.upload.sk', odict(value=sk)),
-        ('.main.upload.type', odict(value=upload)),
+        ('.main.incept.servers', odict(value=config["servers"])),
+        ('.main.incept.data', odict(value=data)),
+        ('.main.incept.sk', odict(value=sk))
     ]
 
     return preloads
 
 
-def rotateSetup(rotate, config):
+def uploadSetup(config):
+    path = click.prompt(
+        "Please enter a path to the data file: ",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
+    )
+
+    data = h.parseDataFile(path, "otp")
+
+    sk = click.prompt("Please enter you signing/private key: ")
+
+    preloads = [
+        ('.main.upload.servers', odict(value=config["servers"])),
+        ('.main.upload.data', odict(value=data)),
+        ('.main.upload.sk', odict(value=sk))
+    ]
+
+    return preloads
+
+
+def rotateSetup(config):
     path = click.prompt(
         "Please enter a path to the data file: ",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
@@ -185,18 +226,47 @@ def rotateSetup(rotate, config):
     return preloads
 
 
-def retrieveSetup(retrieve, config):
-    did = click.prompt(
-        "Please enter a did for the data you're retrieving: ",
+def updateSetup(config):
+    path = click.prompt(
+        "Please enter a path to the data file: ",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
     )
+
+    data = h.parseDataFile(path, "otp")
+
+    sk = click.prompt("Please enter you signing/private key: ")
+
+    preloads = [
+        ('.main.update.servers', odict(value=config["servers"])),
+        ('.main.update.data', odict(value=data)),
+        ('.main.update.did', odict(value=data["id"])),
+        ('.main.update.sk', odict(value=sk))
+    ]
+
+    return preloads
+
+
+def retrieveSetup(config):
+    did = click.prompt("Please enter a did for the data you're retrieving: ")
 
     h.validateDid(did)
 
     preloads = [
         ('.main.retrieve.servers', odict(value=config["servers"])),
-        ('.main.retrieve.did', odict(value=did)),
-        ('.main.retrieve.type', odict(value=retrieve))
+        ('.main.retrieve.did', odict(value=did))
+    ]
+
+    return preloads
+
+
+def downloadSetup(config):
+    did = click.prompt("Please enter a did for the data you're downloading: ")
+
+    h.validateDid(did)
+
+    preloads = [
+        ('.main.download.servers', odict(value=config["servers"])),
+        ('.main.download.did', odict(value=did))
     ]
 
     return preloads

@@ -7,42 +7,70 @@ from ..lib import historying as hist
 from ..lib import otping as otp
 
 
+def outputResult(result, console, verbosity):
+    successful = 0
+    console.concise("Result: \n")
+    for url, data in result.items():
+        if verbosity == console.Wordage.profuse:
+            console.profuse("{}:\t{}\n".format(url, data))
+        if verbosity == console.Wordage.concise:
+            console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
+        if 300 > data[1] >= 200:
+            successful += 1
+
+    console.terse("\n{}/{} requests succeeded.\n".format(successful, len(result)))
+
+
+@doify('Incept', ioinits=odict(
+    servers="",
+    data="",
+    sk="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def incept(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers:\n{}\n\n".format(self.servers.value))
+    console.profuse("Data:\n{}\n\n".format(self.data.value))
+
+    result = hist.postHistory(self.data.value, self.sk.value, self.servers.value)
+
+    outputResult(result, console, self.verbosity.value)
+
+    self.complete.value = True
+
+
 @doify('Upload', ioinits=odict(
     servers="",
     data="",
     sk="",
-    type="",
     test="",
     complete=odict(value=False),
     verbosity="",
     start=""
 ))
 def upload(self):
-    verbosity = self.verbosity.value if self.start.value else 0
+    if not self.start.value:
+        self.complete.value = True
+        return
 
-    console = getConsole("didery.py", verbosity=verbosity)
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
 
     console.terse("\n")
     console.concise("Servers:\n{}\n\n".format(self.servers.value))
     console.profuse("Data:\n{}\n\n".format(self.data.value))
-    result = {}
 
-    if self.type.value == "history":
-        result = hist.postHistory(self.data.value, self.sk.value, self.servers.value)
-    elif self.type.value == "otp":
-        result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value)
+    result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value)
 
-    successful = 0
-    console.concise("Result: \n")
-    for url, data in result.items():
-        if self.verbosity.value == console.Wordage.profuse:
-            console.profuse("{}:\t{}\n".format(url, data))
-        if self.verbosity.value == console.Wordage.concise:
-            console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
-        if 300 > data[1] >= 200:
-            successful += 1
-
-    console.terse("\n{}/{} requests succeeded.\n".format(successful, len(result)))
+    outputResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -59,30 +87,49 @@ def upload(self):
     start=""
 ))
 def rotation(self):
-    verbosity = self.verbosity.value if self.start.value else 0
+    if not self.start.value:
+        self.complete.value = True
+        return
 
-    console = getConsole("didery.py", verbosity=verbosity)
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
 
     console.terse("\n")
     console.concise("Servers:\n{}\n\n".format(self.servers.value))
     console.profuse("Data:\n{}\n\n".format(self.data.value))
 
-    if self.servers.value is not None:
-        result = hist.putHistory(self.did.value, self.data.value, self.sk.value, self.psk.value, self.servers.value)
-    else:
-        result = {}
+    result = hist.putHistory(self.did.value, self.data.value, self.sk.value, self.psk.value, self.servers.value)
 
-    successful = 0
-    console.concise("Result: \n")
-    for url, data in result.items():
-        if self.verbosity.value == console.Wordage.profuse:
-            console.profuse("{}:\t{}\n".format(url, data))
-        if self.verbosity.value == console.Wordage.concise:
-            console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
-        if 300 > data[1] >= 200:
-            successful += 1
+    outputResult(result, console, self.verbosity.value)
 
-    console.terse("\n{}/{} requests succeeded.\n".format(successful, len(result)))
+    self.complete.value = True
+
+
+@doify('Update', ioinits=odict(
+    servers="",
+    data="",
+    did="",
+    sk="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def update(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers:\n{}\n\n".format(self.servers.value))
+    console.profuse("Data:\n{}\n\n".format(self.data.value))
+
+    print(self.data.value)
+
+    result = otp.putOtpBlob(self.did.value, self.data.value, self.sk.value, self.servers.value)
+
+    outputResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -90,32 +137,55 @@ def rotation(self):
 @doify('Retrieval', ioinits=odict(
     servers="",
     did="",
-    type="",
     test="",
     complete=odict(value=False),
     verbosity="",
     start=""
 ))
 def retrieval(self):
-    verbosity = self.verbosity.value if self.start.value else 0
+    if not self.start.value:
+        self.complete.value = True
+        return
 
-    console = getConsole("didery.py", verbosity=verbosity)
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
 
     console.terse("\n")
     console.concise("Servers: {}\n".format(self.servers.value))
     console.profuse("DID: {}\n".format(self.did.value))
-    result = {}
 
-    if self.type.value == "history":
-        result = hist.getDidHistory(self.did.value, self.servers.value)
-    elif self.type.value == "otp_data":
-        result = otp.getOtpBlob(self.did.value, self.servers.value)
+    result = hist.getDidHistory(self.did.value, self.servers.value)
 
     if result:
-        if self.type.value == "history":
-            console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["history"], result["signatures"]))
-        elif self.type.value == "otp_data":
-            console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["otp_data"], result["signature"]))
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["history"], result["signatures"]))
+    else:
+        console.terse("Consensus Failed.\n")
+
+    self.complete.value = True
+
+
+@doify('Download', ioinits=odict(
+    servers="",
+    did="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def download(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers: {}\n".format(self.servers.value))
+    console.profuse("DID: {}\n".format(self.did.value))
+
+    result = otp.getOtpBlob(self.did.value, self.servers.value)
+
+    if result:
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["otp_data"], result["signature"]))
     else:
         console.terse("Consensus Failed.\n")
 

@@ -5,13 +5,21 @@ house main
 	framer diderypy be active first diderypy
 		frame diderypy
 		    print starting didery.py service
+		    bid start incept
 		    bid start upload
 		    bid start rotate
+		    bid start update
 		    bid start retrieve
-		    go next if .main.upload.complete == True and .main.rotate.complete == True and .main.retrieve.complete == True
+		    bid start download
+		    go next if .main.incept.complete == True and .main.upload.complete == True and .main.rotate.complete == True and .main.update.complete == True and .main.retrieve.complete == True and .main.download.complete == True
 
 		frame stopper
 		    bid stop all
+
+    framer incept be inactive via .main.incept
+	    frame incept
+	        print starting incept
+	        do incept at enter
 
 	framer upload be inactive via .main.upload
 	    frame upload
@@ -23,7 +31,17 @@ house main
 	        print starting rotation
 	        do rotation at enter
 
+	framer update be inactive via .main.update
+	    frame update
+	        print starting update
+	        do update at enter
+
 	framer retrieve be inactive via .main.retrieve
 	    frame retrieve
             print starting retrieval
             do retrieval at enter
+
+    framer download be inactive via .main.download
+	    frame download
+	        print starting download
+	        do download at enter

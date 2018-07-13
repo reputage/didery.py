@@ -44,7 +44,7 @@ class OtpData(DideryData):
         self.data = json.loads(data)
         self.body = self.data["otp_data"]
         did, vk = validateDid(self.body["id"])
-        self.signature = self.data["signature"]["signer"]
+        self.signature = self.data["signatures"]["signer"]
         self.vk = vk
         self.did = did
 

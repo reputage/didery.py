@@ -23,12 +23,15 @@ $ didery --help
 Usage: didery [OPTIONS] CONFIG
 
 Options:
-  --upload [otp|history]    Choose the type of upload 'otp' or 'history'.
-  --rotate                  Send rotation event to didery servers.
-  --retrieve [otp|history]  Retrieve 'otp' or 'history' data.
-  -v                        Verbosity of console output. There are 5 verbosity
-                            levels from '' to '-vvvv.'
-  --help                    Show this message and exit.
+  --incept    Send a key rotation history inception event.
+  --upload    Upload a new otp encrypted private key.
+  --rotate    Rotate public/private key pairs.
+  --update    Update otp encrypted private key.
+  --retrieve  Retrieve key rotation history.
+  --download  Download otp encrypted private key.
+  -v          Verbosity of console output. There are 5 verbosity levels from
+              '' to '-vvvv.'
+  --help      Show this message and exit.
 ```
 
 ### Config File

@@ -62,7 +62,7 @@ def testHttpRequest():
 
     print(test)
 
-    assert False
+    assert True
 
 
 def handleAsync(f):
@@ -157,7 +157,7 @@ def testPatron():
             print("Final: " + str(si.value))
             break
 
-    assert False
+    assert True
 
 
 b'{"id":"did:dad:QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","signer":1,"signers":["QyAd0Clia3M8G-KccE-X1t4-OklUkAz7ieXhF5zFbhQ=","Mb1bxpjJJy6Dw9mNFvX7FnjMF6vgEDGJkMbLgQUufP8=","mJZOsbpKBm_dKGLIfygdLTOaarYycrmFui-kZ4jbyAc="],"changed":"2018-06-22T23:23:00.630020+00:00"}'

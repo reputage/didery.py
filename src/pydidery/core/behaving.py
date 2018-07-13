@@ -125,8 +125,6 @@ def update(self):
     console.concise("Servers:\n{}\n\n".format(self.servers.value))
     console.profuse("Data:\n{}\n\n".format(self.data.value))
 
-    print(self.data.value)
-
     result = otp.putOtpBlob(self.did.value, self.data.value, self.sk.value, self.servers.value)
 
     outputResult(result, console, self.verbosity.value)
@@ -185,7 +183,7 @@ def download(self):
     result = otp.getOtpBlob(self.did.value, self.servers.value)
 
     if result:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["otp_data"], result["signature"]))
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["otp_data"], result["signatures"]))
     else:
         console.terse("Consensus Failed.\n")
 

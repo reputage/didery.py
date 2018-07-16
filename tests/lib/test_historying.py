@@ -18,17 +18,18 @@ vk3, sk3 = gen.keyGen()
 did = history['id']
 
 url1, url2 = "http://localhost:8080", "http://localhost:8000"
+urls = ["http://localhost:8080", "http://localhost:8000"]
 
 
 def testPostHistory():
-    result = hist.postHistory(history, sk1)
+    result = hist.postHistory(history, sk1, urls)
 
     assert result[url1][1] == 201
     assert result[url2][1] == 201
 
 
-def testGetDidHistory():
-    result = hist.getDidHistory(did)
+def testGetHistory():
+    result = hist.getHistory(did, urls)
 
     assert result['history'] == history
 
@@ -37,9 +38,9 @@ def testPutHistory():
     history['signer'] = 1
     history['signers'].append(vk3)
 
-    result = hist.putHistory(did, history, sk1, sk2)
+    result = hist.putHistory(history, sk1, sk2, urls)
 
     assert result[url1][1] == 200
-    assert json.loads(result[url1][0])["history"] == history
+    assert result[url1][0]["history"] == history
     assert result[url2][1] == 200
-    assert json.loads(result[url2][0])["history"] == history
+    assert result[url2][0]["history"] == history

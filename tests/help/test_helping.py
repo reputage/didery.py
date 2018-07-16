@@ -137,8 +137,6 @@ def testPatron():
     history['signer'] = 1
     history['signers'].append(ppvk)
     body = json.dumps(history, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
-    print()
-    print(body)
 
     headers = {
         "Signature": 'signer="{0}"; rotation="{1}"'.format(
@@ -153,7 +151,6 @@ def testPatron():
         try:
             next(response)
         except StopIteration as si:
-            print("TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print("Final: " + str(si.value))
             break
 

@@ -11,6 +11,9 @@ STATUS = 1
 
 
 class DideryData:
+    """
+        Base class for parsing didery request data for easier access
+    """
     def __init__(self, data):
         self.bdata = b'{}'
         self.data = {}
@@ -21,11 +24,14 @@ class DideryData:
 
 
 class HistoryData(DideryData):
+    """
+        Parse didery request data for easier access
+    """
     def __init__(self, data):
         DideryData.__init__(self, data)
 
-        self.bdata = data
-        self.data = json.loads(data)
+        self.bdata = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
+        self.data = data
         self.body = self.data["history"]
         self.vk = self.body["signers"][int(self.body["signer"])]
         self.did = self.body["id"]
@@ -37,11 +43,14 @@ class HistoryData(DideryData):
 
 
 class OtpData(DideryData):
+    """
+        Parse didery request data for easier access
+    """
     def __init__(self, data):
         DideryData.__init__(self, data)
 
-        self.bdata = data
-        self.data = json.loads(data)
+        self.bdata = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
+        self.data = data
         self.body = self.data["otp_data"]
         did, vk = validateDid(self.body["id"])
         self.signature = self.data["signatures"]["signer"]
@@ -50,6 +59,15 @@ class OtpData(DideryData):
 
 
 def validateSignatures(data, dtype):
+    """
+        Validates signatures and data and then checks
+        if a majority of the data items are equal by
+        comparing their signatures.
+
+        :param data: list of history dicts returned by the didery server
+        :param dtype: string specifying to consense otp or history data
+        :return: tuple if majority of signatures are valid else None
+    """
     valid_data = {}
     sig_counts = {}
     num_valid = 0
@@ -82,13 +100,13 @@ def validateSignatures(data, dtype):
 
 def consense(data, dtype="history"):
     """
-    Validates signatures and data and then checks
-    if a majority of the data items are equal by
-    comparing their signatures.
+        Validates signatures and data and then checks
+        if a majority of the data items are equal by
+        comparing their signatures.
 
-    :param data: list of history dicts returned by the didery server
-    :param dtype: string specifying to consense otp or history data
-    :return: history dict if consensus is reached else None
+        :param data: list of history dicts returned by the didery server
+        :param dtype: string specifying to consense otp or history data
+        :return: history dict if consensus is reached else None
     """
 
     valid_data, sig_counts = validateSignatures(data, dtype)

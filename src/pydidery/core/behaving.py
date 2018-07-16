@@ -97,7 +97,7 @@ def rotation(self):
     console.concise("Servers:\n{}\n\n".format(self.servers.value))
     console.profuse("Data:\n{}\n\n".format(self.data.value))
 
-    result = hist.putHistory(self.did.value, self.data.value, self.sk.value, self.psk.value, self.servers.value)
+    result = hist.putHistory(self.data.value, self.sk.value, self.psk.value, self.servers.value)
 
     outputResult(result, console, self.verbosity.value)
 
@@ -125,7 +125,7 @@ def update(self):
     console.concise("Servers:\n{}\n\n".format(self.servers.value))
     console.profuse("Data:\n{}\n\n".format(self.data.value))
 
-    result = otp.putOtpBlob(self.did.value, self.data.value, self.sk.value, self.servers.value)
+    result = otp.putOtpBlob(self.data.value, self.sk.value, self.servers.value)
 
     outputResult(result, console, self.verbosity.value)
 
@@ -151,7 +151,7 @@ def retrieval(self):
     console.concise("Servers: {}\n".format(self.servers.value))
     console.profuse("DID: {}\n".format(self.did.value))
 
-    result = hist.getDidHistory(self.did.value, self.servers.value)
+    result = hist.getHistory(self.did.value, self.servers.value)
 
     if result:
         console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["history"], result["signatures"]))

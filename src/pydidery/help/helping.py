@@ -238,7 +238,7 @@ def awaitAsync(generators):
             try:
                 next(generator)
             except StopIteration as si:
-                values[i] = si.value
+                values[i] = (json.loads(si.value[0]), si.value[1])
                 remove.append(i)
 
         for val in remove:

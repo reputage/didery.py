@@ -21,25 +21,26 @@ otpData = {
 }
 
 url1, url2 = "http://localhost:8080", "http://localhost:8000"
+urls = ["http://localhost:8080", "http://localhost:8000"]
 
 
 def testPostOtpBlob():
-    result = otp.postOtpBlob(otpData, sk)
+    result = otp.postOtpBlob(otpData, sk, urls)
 
     assert result[url1][1] == 201
     assert result[url2][1] == 201
 
 
 def testGetOtpBlob():
-    result = otp.getOtpBlob(did)
+    result = otp.getOtpBlob(did, urls)
 
     assert result['otp_data'] == otpData
 
 
 def testPutOtpBlob():
-    result = otp.putOtpBlob(did, otpData, sk)
+    result = otp.putOtpBlob(otpData, sk, urls)
 
     assert result[url1][1] == 200
-    assert json.loads(result[url1][0])["otp_data"] == otpData
+    assert result[url1][0]["otp_data"] == otpData
     assert result[url2][1] == 200
-    assert json.loads(result[url2][0])["otp_data"] == otpData
+    assert result[url2][0]["otp_data"] == otpData

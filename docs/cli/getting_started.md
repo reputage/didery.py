@@ -1,13 +1,4 @@
-![didery logo](https://github.com/reputage/didery.js/blob/dev/logo/didery.png)
-
-
-# Didery.py
-Didery.py is a python library and command line wrapper for communicating with didery servers.  It handles broadcasting data and polling data from remote didery servers and verifying consensus on the returned data.
-
-## Didery.py Python Library
-You can find the docs for the library [here](https://diderypy.readthedocs.io/en/latest/) 
-
-## Getting Started With The CLI
+# Getting Started
 You will need python 3.6 and libsodium installed to run didery.py. You can find python 3.6 [here](https://www.python.org/downloads/)  and libsodium [here](https://download.libsodium.org/doc/installation/).  It is recommended that you also setup a python virtual environment as shown [here](http://cewing.github.io/training.python_web/html/presentations/venv_intro.html).
 
 ## Installation

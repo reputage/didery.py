@@ -1,3 +1,7 @@
+# Example Data File
+
+#### data.json
+```json
 {
     "history": {
         "id": "did:dad:LYyYqfpFLbRcqqah3ViCBPl-c0wW5qo7IpT9Fl13I4Q=",
@@ -18,3 +22,4 @@
         "ppsk": "KrUp_AowwQe6eEq-Qggt4wcKZ5x2fHSnZdzaZbH1mSaqh92o0W9huLnZnNpUz2EHSLyFQ1tRBFmSGkcWnJhx9Q=="
     }
 }
+```

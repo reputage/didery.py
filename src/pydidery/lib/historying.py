@@ -72,3 +72,20 @@ def putHistory(data, sk, psk, urls):
         generators[url] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
+
+
+def deleteHistory(did, sk, urls):
+    generators = {}
+    data = {"id": did}
+    bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
+    headers = {
+        "Signature": 'signer="{0}"'.format(
+            gen.signResource(bdata, gen.key64uToKey(sk))
+        )
+    }
+
+    for url in urls:
+        endpoint = "{0}/{1}/{2}".format(url, "history", did)
+        generators[url] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
+
+    return h.awaitAsync(generators)

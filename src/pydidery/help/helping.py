@@ -120,7 +120,7 @@ def parseConfigFile(file):
     data = parseJsonFile(file, ["servers"])
 
     if not isinstance(data["servers"], list):
-        raise ValidationError('"servers" field must be a list.')
+        raise ValidationError('"servers" field must be a list')
 
     return data
 

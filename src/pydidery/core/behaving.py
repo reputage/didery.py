@@ -188,3 +188,57 @@ def download(self):
         console.terse("Consensus Failed.\n")
 
     self.complete.value = True
+
+
+@doify('Delete', ioinits=odict(
+    servers="",
+    did="",
+    sk="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def delete(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers: {}\n".format(self.servers.value))
+    console.profuse("DID: {}\n".format(self.did.value))
+
+    result = hist.deleteHistory(self.did.value, self.sk.value, self.servers.value)
+
+    outputResult(result, console, self.verbosity.value)
+
+    self.complete.value = True
+
+
+@doify('Remove', ioinits=odict(
+    servers="",
+    did="",
+    sk="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def remove(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers: {}\n".format(self.servers.value))
+    console.profuse("DID: {}\n".format(self.did.value))
+
+    result = otp.removeOtpBlob(self.did.value, self.sk.value, self.servers.value)
+
+    outputResult(result, console, self.verbosity.value)
+
+    self.complete.value = True

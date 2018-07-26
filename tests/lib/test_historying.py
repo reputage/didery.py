@@ -44,3 +44,12 @@ def testPutHistory():
     assert result[url1][0]["history"] == history
     assert result[url2][1] == 200
     assert result[url2][0]["history"] == history
+
+
+def testDeleteHistory():
+    result = hist.deleteHistory(did, sk2, urls)
+
+    assert result[url1][1] == 200
+    assert result[url1][0]["deleted"]["history"] == history
+    assert result[url2][1] == 200
+    assert result[url2][0]["deleted"]["history"] == history

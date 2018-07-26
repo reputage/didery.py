@@ -69,3 +69,20 @@ def putOtpBlob(data, sk, urls):
         generators[url] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
+
+
+def removeOtpBlob(did, sk, urls):
+    generators = {}
+    data = {"id": did}
+    bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
+    headers = {
+        "Signature": 'signer="{0}"'.format(
+            gen.signResource(bdata, gen.key64uToKey(sk))
+        )
+    }
+
+    for url in urls:
+        endpoint = "{0}/{1}/{2}".format(url, "blob", did)
+        generators[url] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
+
+    return h.awaitAsync(generators)

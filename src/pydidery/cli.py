@@ -76,16 +76,41 @@ Command line interface for didery.py library.  Path to config file containing se
     help="Download otp encrypted private key."
 )
 @click.option(
+    '--delete',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help="Delete rotation history."
+)
+@click.option(
+    '--remove',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help="Remove otp encrypted private key."
+)
+@click.option(
     '-v',
     multiple=False,
     count=True,
     help="Verbosity of console output. There are 5 verbosity levels from '' to '-vvvv.'"
 )
+@click.option(
+    '--data',
+    multiple=False,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
+    help="Path to the data file."
+)
+@click.option(
+    '--did',
+    multiple=False,
+    help="decentralized identifier(did)."
+)
 @click.argument(
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(incept, upload, rotate, update, retrieve, download, v, config):
+def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, data, did, config):
     verbose = v if v <= 4 else 4
     preloads = [
         ('.main.incept.verbosity', odict(value=verbose)),
@@ -94,42 +119,60 @@ def main(incept, upload, rotate, update, retrieve, download, v, config):
         ('.main.update.verbosity', odict(value=verbose)),
         ('.main.retrieve.verbosity', odict(value=verbose)),
         ('.main.download.verbosity', odict(value=verbose)),
+        ('.main.delete.verbosity', odict(value=verbose)),
+        ('.main.remove.verbosity', odict(value=verbose)),
         ('.main.incept.start', odict(value=True if incept else False)),
         ('.main.upload.start', odict(value=True if upload else False)),
         ('.main.rotate.start', odict(value=True if rotate else False)),
         ('.main.update.start', odict(value=True if update else False)),
         ('.main.retrieve.start', odict(value=True if retrieve else False)),
-        ('.main.download.start', odict(value=True if download else False))
+        ('.main.download.start', odict(value=True if download else False)),
+        ('.main.delete.start', odict(value=True if delete else False)),
+        ('.main.remove.start', odict(value=True if remove else False))
     ]
 
-    options = [incept, upload, rotate, update, retrieve, download]
-    if options.count(True) != 1:
+    options = [incept, upload, rotate, update, retrieve, download, delete, remove]
+    count = options.count(True)
+    if count > 1:
         click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, or --download")
         return
+    if count == 0:
+        click.echo("No options given. For help use --help. Exiting Didery.py")
+        return
 
-    configData = h.parseConfigFile(config)
+    try:
+        configData = h.parseConfigFile(config)
+    except ValidationError as err:
+        click.echo("Error parsing the config file: {}.".format(err))
+        return
 
     try:
         if incept:
-            preloads.extend(inceptSetup(configData))
+            preloads.extend(inceptSetup(configData, data))
 
         if upload:
-            preloads.extend(uploadSetup(configData))
+            preloads.extend(uploadSetup(configData, data))
 
         if rotate:
-            preloads.extend(rotateSetup(configData))
+            preloads.extend(rotateSetup(configData, data))
 
         if update:
-            preloads.extend(updateSetup(configData))
+            preloads.extend(updateSetup(configData, data))
 
         if retrieve:
-            preloads.extend(retrieveSetup(configData))
+            preloads.extend(retrieveSetup(configData, did))
 
         if download:
-            preloads.extend(downloadSetup(configData))
+            preloads.extend(downloadSetup(configData, did))
 
-    except ValidationError as ex:
-        click.echo(str(ex))
+        if delete:
+            preloads.extend(deleteSetup(configData, did))
+
+        if remove:
+            preloads.extend(removeSetup(configData, did))
+
+    except (ValidationError, ValueError) as ex:
+        click.echo("Error setting up Didery.py: {}.".format(ex))
         return
 
     projectDirpath = os.path.dirname(
@@ -157,17 +200,12 @@ def main(incept, upload, rotate, update, retrieve, download, v, config):
                         preloads=preloads)
 
 
-def inceptSetup(config):
-    if click.confirm("Would you like to generate key pairs?"):
+def inceptSetup(config, data):
+    if data is None:
         history, sk = historyInit()
         data = history
     else:
-        path = click.prompt(
-            "Please enter a path to the data file: ",
-            type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-        )
-
-        data = h.parseDataFile(path, "history")
+        data = h.parseDataFile(data, "history")
 
         sk = click.prompt("Please enter you signing/private key: ")
 
@@ -180,7 +218,7 @@ def inceptSetup(config):
     return preloads
 
 
-def uploadSetup(config):
+def uploadSetup(config, data):
     path = click.prompt(
         "Please enter a path to the data file: ",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
@@ -199,7 +237,7 @@ def uploadSetup(config):
     return preloads
 
 
-def rotateSetup(config):
+def rotateSetup(config, data):
     path = click.prompt(
         "Please enter a path to the data file: ",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
@@ -226,7 +264,7 @@ def rotateSetup(config):
     return preloads
 
 
-def updateSetup(config):
+def updateSetup(config, data):
     path = click.prompt(
         "Please enter a path to the data file: ",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
@@ -246,7 +284,7 @@ def updateSetup(config):
     return preloads
 
 
-def retrieveSetup(config):
+def retrieveSetup(config, did):
     did = click.prompt("Please enter a did for the data you're retrieving: ")
 
     h.validateDid(did)
@@ -259,7 +297,7 @@ def retrieveSetup(config):
     return preloads
 
 
-def downloadSetup(config):
+def downloadSetup(config, did):
     did = click.prompt("Please enter a did for the data you're downloading: ")
 
     h.validateDid(did)
@@ -272,10 +310,42 @@ def downloadSetup(config):
     return preloads
 
 
+def deleteSetup(config, did):
+    did = click.prompt("Please enter a did for the data you're deleting: ")
+
+    h.validateDid(did)
+
+    sk = click.prompt("Please enter your signing/private key: ")
+
+    preloads = [
+        ('.main.delete.servers', odict(value=config["servers"])),
+        ('.main.delete.did', odict(value=did)),
+        ('.main.delete.sk', odict(value=sk))
+    ]
+
+    return preloads
+
+
+def removeSetup(config, did):
+    did = click.prompt("Please enter a did for the data you're removing: ")
+
+    h.validateDid(did)
+
+    sk = click.prompt("Please enter your signing/private key: ")
+
+    preloads = [
+        ('.main.remove.servers', odict(value=config["servers"])),
+        ('.main.remove.did', odict(value=did)),
+        ('.main.remove.sk', odict(value=sk))
+    ]
+
+    return preloads
+
+
 def historyInit():
     history, vk, sk, pvk, psk = gen.historyGen()
 
-    with open('/tmp/didery.keys.json', 'w') as keyFile:
+    with open('didery.keys.json', 'w') as keyFile:
         keys = {
             "current_sk": sk,
             "current_vk": vk,
@@ -285,13 +355,13 @@ def historyInit():
 
         keyFile.write(json.dumps(keys, encoding='utf-8'))
 
-    click.prompt('\nKeys have been generated and stored in /tmp/didery.keys.json. \n\n'
+    click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
                  'Make a copy and store them securely. \n'
                  'The file will be deleted after you enter a key')
 
-    os.remove('/tmp/didery.keys.json')
+    os.remove('didery.keys.json')
 
-    click.echo('/tmp/didery.keys.json deleted.')
+    click.echo('didery.keys.json deleted.')
 
     return history, sk
 
@@ -299,7 +369,7 @@ def historyInit():
 def keyery():
     sk, vk = gen.keyGen()
 
-    with open('/tmp/didery.keys.json', 'w') as keyFile:
+    with open('didery.keys.json', 'w') as keyFile:
         keys = {
             "signing_key": sk,
             "verification_key": vk
@@ -307,12 +377,12 @@ def keyery():
 
         keyFile.write(json.dumps(keys, encoding='utf-8'))
 
-    click.prompt('\nKeys have been generated and stored in /tmp/didery.keys.json. \n\n'
+    click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
                  'Make a copy and store them securely. \n'
                  'The file will be deleted after you enter a key')
 
-    os.remove('/tmp/didery.keys.json')
+    os.remove('didery.keys.json')
 
-    click.echo('/tmp/didery.keys.json deleted.')
+    click.echo('didery.keys.json deleted.')
 
     return vk, sk

@@ -172,7 +172,7 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, 
             preloads.extend(removeSetup(configData, did))
 
     except (ValidationError, ValueError) as ex:
-        click.echo("Error setting up Didery.py: {}.".format(ex))
+        click.echo("Error setting up didery.py: {}.".format(ex))
         return
 
     projectDirpath = os.path.dirname(
@@ -207,7 +207,7 @@ def inceptSetup(config, data):
     else:
         data = h.parseDataFile(data, "history")
 
-        sk = click.prompt("Please enter you signing/private key: ")
+        sk = click.prompt("Please enter you signing/private key")
 
     preloads = [
         ('.main.incept.servers', odict(value=config["servers"])),
@@ -219,14 +219,12 @@ def inceptSetup(config, data):
 
 
 def uploadSetup(config, data):
-    path = click.prompt(
-        "Please enter a path to the data file: ",
-        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-    )
+    if data is None:
+        raise ValueError("Data file required. Use --data=path/to/file")
 
-    data = h.parseDataFile(path, "otp")
+    data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Please enter you signing/private key: ")
+    sk = click.prompt("Please enter you signing/private key")
 
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
@@ -238,15 +236,13 @@ def uploadSetup(config, data):
 
 
 def rotateSetup(config, data):
-    path = click.prompt(
-        "Please enter a path to the data file: ",
-        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-    )
+    if data is None:
+        raise ValueError("Data file required. Use --data=path/to/file")
 
-    data = h.parseDataFile(path, "history")
+    data = h.parseDataFile(data, "history")
 
-    csk = click.prompt("Please enter your current signing/private key: ")
-    rsk = click.prompt("Please enter the signing/private key you are rotating to: ")
+    csk = click.prompt("Please enter your current signing/private key")
+    rsk = click.prompt("Please enter the signing/private key you are rotating to")
 
     if click.confirm("Do you need a new pre-rotated key pair generated"):
         pvk, psk = keyery()
@@ -265,14 +261,12 @@ def rotateSetup(config, data):
 
 
 def updateSetup(config, data):
-    path = click.prompt(
-        "Please enter a path to the data file: ",
-        type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True)
-    )
+    if data is None:
+        raise ValueError("Data file required. Use --data=path/to/file")
 
-    data = h.parseDataFile(path, "otp")
+    data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Please enter you signing/private key: ")
+    sk = click.prompt("Please enter you signing/private key")
 
     preloads = [
         ('.main.update.servers', odict(value=config["servers"])),
@@ -285,7 +279,8 @@ def updateSetup(config, data):
 
 
 def retrieveSetup(config, did):
-    did = click.prompt("Please enter a did for the data you're retrieving: ")
+    if did is None:
+        raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
@@ -298,7 +293,8 @@ def retrieveSetup(config, did):
 
 
 def downloadSetup(config, did):
-    did = click.prompt("Please enter a did for the data you're downloading: ")
+    if did is None:
+        raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
@@ -311,11 +307,12 @@ def downloadSetup(config, did):
 
 
 def deleteSetup(config, did):
-    did = click.prompt("Please enter a did for the data you're deleting: ")
+    if did is None:
+        raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
-    sk = click.prompt("Please enter your signing/private key: ")
+    sk = click.prompt("Please enter your signing/private key")
 
     preloads = [
         ('.main.delete.servers', odict(value=config["servers"])),
@@ -327,11 +324,12 @@ def deleteSetup(config, did):
 
 
 def removeSetup(config, did):
-    did = click.prompt("Please enter a did for the data you're removing: ")
+    if did is None:
+        raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
-    sk = click.prompt("Please enter your signing/private key: ")
+    sk = click.prompt("Please enter your signing/private key")
 
     preloads = [
         ('.main.remove.servers', odict(value=config["servers"])),

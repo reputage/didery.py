@@ -29,9 +29,9 @@ def testPostHistory():
 
 
 def testGetHistory():
-    result = hist.getHistory(did, urls)
+    data, results = hist.getHistory(did, urls)
 
-    assert result['history'] == history
+    assert data['history'] == history
 
 
 def testPutHistory():

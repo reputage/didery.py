@@ -66,21 +66,25 @@ def testvalidateSignatures():
     assert result[SIG_COUNTS] is None
 
     # Test empty data
-    result = consensing.validateSignatures([], "history")
-    assert result[VALID_DATA] is None
-    assert result[SIG_COUNTS] is None
+    result = consensing.validateSignatures({}, "history")
+    assert result[VALID_DATA] == {}
+    assert result[SIG_COUNTS] == {}
 
     # Test that majority of valid data passes
     data["http://localhost:8081"] = (
-        ({
+        {
             "history": datum1[HISTORY],
             "signatures": {
                 "signer": datum1_sig
             }
-        }, 200)
+        },
+        200
     )
 
+    print("RESULTS:                   !")
+    print(bHistory1)
     result = consensing.validateSignatures(data, "history")
+
     assert result[VALID_DATA] is not None
     assert datum1_sig in result[SIG_COUNTS]
     assert result[SIG_COUNTS][datum1_sig] == 2
@@ -172,7 +176,7 @@ def testConsense():
         }, 200)
     }
 
-    assert consensing.consense(data) is not None
+    assert consensing.consense(data)[0] is not None
 
     # Test incomplete majority
     data = {
@@ -197,7 +201,8 @@ def testConsense():
         }, 200)
     }
 
-    assert consensing.consense(data) is None
+    print(consensing.consense(data))
+    assert consensing.consense(data)[0] is None
 
     # Test all equal
     data = {
@@ -224,7 +229,7 @@ def testConsense():
         }, 200)
     }
 
-    assert consensing.consense(data) == {
+    assert consensing.consense(data)[0] == {
             "history": datum1[HISTORY],
             "signatures": {
                 "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),

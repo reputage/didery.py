@@ -32,9 +32,9 @@ def testPostOtpBlob():
 
 
 def testGetOtpBlob():
-    result = otp.getOtpBlob(did, urls)
+    data, result = otp.getOtpBlob(did, urls)
 
-    assert result['otp_data'] == otpData
+    assert data['otp_data'] == otpData
 
 
 def testPutOtpBlob():

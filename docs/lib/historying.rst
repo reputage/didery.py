@@ -180,8 +180,10 @@ None is returned.
   identifier(\ `DID <https://w3c-ccg.github.io/did-spec/>`__) string
 | **urls** (*required*)- list of url strings to query
 
-**returns** (*required*)- dict containing the rotation history as shown
-on the didery documentation
+**returns** - (dict, dict) containing the rotation history as shown on
+the didery documentation and a results dict containing a short string
+description for each url. The results dict can be used to determine what
+urls failed.
 
 Example
 ^^^^^^^
@@ -201,12 +203,14 @@ Example
 
     did = history["id"]
 
-    response = hist.getHistory(did, urls)
+    data, results = hist.getHistory(did, urls)
 
-    if response is None:
-        print("Consensus could not be reached.")
+    if data is None:
+        # Consensus could not be reached. Print results for each url
+        for url, result in results.items():
+            print("{}:\t{}".format(url, result))
     else:
-        print(response)
+        print(data)
 
 Output
 ^^^^^^

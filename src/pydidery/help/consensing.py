@@ -17,10 +17,12 @@ class DideryData:
     def __init__(self, data):
         self.bdata = b'{}'
         self.data = {}
-        self.body = None
+        self.body = None,
+        self.bbody = b'{}'
         self.signature = ""
         self.vk = ""
         self.did = ""
+        self.valid = False
 
 
 class HistoryData(DideryData):
@@ -33,6 +35,7 @@ class HistoryData(DideryData):
         self.bdata = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
         self.data = data
         self.body = self.data["history"]
+        self.bbody = json.dumps(self.body, ensure_ascii=False, separators=(",", ":")).encode()
         self.vk = self.body["signers"][int(self.body["signer"])]
         self.did = self.body["id"]
 
@@ -40,6 +43,8 @@ class HistoryData(DideryData):
             self.signature = self.data["signatures"]["rotation"]
         else:
             self.signature = self.data["signatures"]["signer"]
+
+        self.valid = verify64u(self.signature, self.bbody, self.vk)
 
 
 class OtpData(DideryData):
@@ -52,10 +57,13 @@ class OtpData(DideryData):
         self.bdata = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
         self.data = data
         self.body = self.data["otp_data"]
+        self.bbody = json.dumps(self.body, ensure_ascii=False, separators=(",", ":")).encode()
         did, vk = validateDid(self.body["id"])
         self.signature = self.data["signatures"]["signer"]
         self.vk = vk
         self.did = did
+
+        self.valid = verify64u(self.signature, self.bbody, self.vk)
 
 
 def validateSignatures(data, dtype):
@@ -70,32 +78,39 @@ def validateSignatures(data, dtype):
     """
     valid_data = {}
     sig_counts = {}
+    results = {}
     num_valid = 0
 
-    if not data:
-        return None, None
-
     for url, datum in data.items():
+        # Check request succeeded
         if datum[STATUS] != 200:
+            # Track result of data validation
+            results[url] = "{} Error".format(datum[STATUS])
             continue
 
+        # Determine data type
         if dtype == "history":
             datum = HistoryData(datum[RESPONSE])
         else:
             datum = OtpData(datum[RESPONSE])
 
-        if verify64u(datum.signature, json.dumps(datum.body, ensure_ascii=False, separators=(',', ':')).encode(), datum.vk):
+        if datum.valid:
             num_valid += 1
             # keep track of data that belongs to signature
             valid_data[datum.signature] = datum.data
             # Count number of times the signature has been seen
             sig_counts[datum.signature] = sig_counts.get(datum.signature, 0) + 1
+            # Track result of data validation
+            results[url] = "Data Validated"
+        else:
+            # Track result of data validation
+            results[url] = "Signature Validation Failed"
 
     # check that a majority of signatures are valid
     if len(data) * MAJORITY > num_valid:
-        return None, None
+        return None, None, results
     else:
-        return valid_data, sig_counts
+        return valid_data, sig_counts, results
 
 
 def consense(data, dtype="history"):
@@ -106,21 +121,24 @@ def consense(data, dtype="history"):
 
         :param data: list of history dicts returned by the didery server
         :param dtype: string specifying to consense otp or history data
-        :return: history dict if consensus is reached else None
+        :return: tuple - history dict and dict of result strings for each url.
+                 if consensus is not reached then None and the results dict are returned
     """
+    if not data:
+        raise ValueError("data cannot be None.")
 
-    valid_data, sig_counts = validateSignatures(data, dtype)
+    valid_data, sig_counts, results = validateSignatures(data, dtype)
 
     # Not enough valid signatures
     if valid_data is None:
-        return None
+        return None, results
 
     # All signatures are equal
     if len(valid_data) == 1:
-        return valid_data.popitem()[1]
+        return valid_data.popitem()[1], results
 
     for sig, count in sig_counts.items():
         if count >= len(data) * MAJORITY:
-            return valid_data[sig]
+            return valid_data[sig], results
 
-    return None
+    return None, results

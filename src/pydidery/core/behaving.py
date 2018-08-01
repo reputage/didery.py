@@ -151,12 +151,16 @@ def retrieval(self):
     console.concise("Servers: {}\n".format(self.servers.value))
     console.profuse("DID: {}\n".format(self.did.value))
 
-    result = hist.getHistory(self.did.value, self.servers.value)
+    data, results = hist.getHistory(self.did.value, self.servers.value)
 
-    if result:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["history"], result["signatures"]))
+    if data:
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["history"], data["signatures"]))
+        for url, result in results.items():
+            console.verbose("{}:\t{}\n".format(url, result))
     else:
         console.terse("Consensus Failed.\n")
+        for url, result in results.items():
+            console.concise("{}:\t{}\n".format(url, result))
 
     self.complete.value = True
 
@@ -180,12 +184,16 @@ def download(self):
     console.concise("Servers: {}\n".format(self.servers.value))
     console.profuse("DID: {}\n".format(self.did.value))
 
-    result = otp.getOtpBlob(self.did.value, self.servers.value)
+    data, results = otp.getOtpBlob(self.did.value, self.servers.value)
 
-    if result:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(result["otp_data"], result["signatures"]))
+    if data:
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["otp_data"], data["signatures"]))
+        for url, result in results.items():
+            console.verbose("{}:\t{}\n".format(url, result))
     else:
         console.terse("Consensus Failed.\n")
+        for url, result in results.items():
+            console.concise("{}:\t{}\n".format(url, result))
 
     self.complete.value = True
 

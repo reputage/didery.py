@@ -12,3 +12,4 @@ This project is meant to be used in tandem with `didery <https://github.com/repu
 
    cli/index
    lib/index
+   decentralized_autonomic_data

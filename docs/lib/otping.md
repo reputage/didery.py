@@ -178,3 +178,73 @@ else:
     }
 }
 ```
+
+### historying.removeOtpBlob(did, sk, urls)
+For GDPR compliance a delete method is provided.  For security reasons the data cannot be deleted without signing with the signing key associated with the public key in the did. 
+
+**did** (_required_)- W3C decentralized identifier([DID](https://w3c-ccg.github.io/did-spec/)) string
+**sk** (_required_)- current signing key. base64 url-file safe signing/private key from EdDSA (Ed25519) key pair    
+**urls** (_required_)- list of url strings to query   
+
+**returns** - dict containing the one time pad encrypted keys that were deleted.
+
+#### Example
+```python
+import pydidery.lib.otping as otp
+import pydidery.lib.generating as gen
+
+# generate a did for the data
+vk, sk = gen.keyGen()
+did = gen.didGen64(vk)
+
+data = {
+    "id": did,
+    "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw"
+}
+
+urls = ["http://localhost:8080", "http://localhost:8000"]
+
+# data must already exist for getOtpBlob to work
+otp.postOtpBlob(data, sk, urls)
+
+# delete the otp encrypted data
+response = otp.removeOtpBlob(did, sk, urls)
+
+print(response)
+```  
+
+#### Output
+```
+{
+    'http://localhost:8000': (
+        {
+            'deleted': {
+                'otp_data': {
+                    'id': 'did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=', 
+                    'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
+                    'changed': '2018-08-02T21:45:30.795185+00:00'
+                }, 
+                'signatures': {
+                    'signer': '9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=='
+                }
+            }
+        }, 
+        200
+    ), 
+    'http://localhost:8080': (
+        {
+            'deleted': {
+                'otp_data': {
+                    'id': 'did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=', 
+                    'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
+                    'changed': '2018-08-02T21:45:30.795185+00:00'
+                }, 
+                'signatures': {
+                    'signer': '9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=='
+                }
+            }
+        }, 
+        200
+    )
+}
+```

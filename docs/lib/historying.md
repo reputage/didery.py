@@ -194,3 +194,76 @@ else:
     }
 }
 ```
+
+### historying.deleteHistory(did, sk, urls)
+For GDPR compliance a delete method is provided.  For security reasons the data cannot be deleted without signing with the current key. 
+
+**did** (_required_)- W3C decentralized identifier([DID](https://w3c-ccg.github.io/did-spec/)) string
+**sk** (_required_)- current signing key. base64 url-file safe signing/private key from EdDSA (Ed25519) key pair    
+**urls** (_required_)- list of url strings to query   
+
+**returns** - dict containing the rotation history that was deleted.
+
+#### Example
+```python
+import pydidery.lib.historying as hist
+import pydidery.lib.generating as gen
+
+# generate the rotation history
+history, vk, sk, pvk, psk = gen.historyGen()
+
+urls = ["http://localhost:8080", "http://localhost:8000"]
+
+# history must already exist to use getHistory
+hist.postHistory(history, sk, urls)
+
+did = history["id"]
+
+response = hist.deleteHistory(did, sk, urls)
+
+print(response)
+```  
+
+#### Output
+```
+{
+    "http://localhost:8000": (
+        {
+            "deleted": {
+                "history": {
+                    "id": "did:dad:52AeBKEjEOymE4hk6prLgjDhIejh-cIrrnguEaN9-f4=", 
+                    "signer": 0, 
+                    "signers": [
+                      "52AeBKEjEOymE4hk6prLgjDhIejh-cIrrnguEaN9-f4=", 
+                      "R0H-ew626o3i1bZy1D4E_lhTY3A7HFi0nrlUWfgcvVc="
+                    ], 
+                    "changed": "2018-08-01T23:46:49.730952+00:00"
+                }, 
+                "signatures": {
+                    "signer": "pUMUiSMYs1xG62MmvcNGDnOlxuIGeUL1FsMklIhvDiaYbRfDKnSW8exfcVzOia9m0Hn7yi7kib2qq35FP4rPCQ=="
+                }
+            }
+        }, 
+        200
+    ), 
+    "http://localhost:8080": (
+        {
+            "deleted": {
+                "history": {
+                    "id": "did:dad:52AeBKEjEOymE4hk6prLgjDhIejh-cIrrnguEaN9-f4=", 
+                    "signer": 0, 
+                    "signers": [
+                        "52AeBKEjEOymE4hk6prLgjDhIejh-cIrrnguEaN9-f4=", 
+                        "R0H-ew626o3i1bZy1D4E_lhTY3A7HFi0nrlUWfgcvVc="
+                    ], 
+                    "changed": "2018-08-01T23:46:49.730952+00:00"
+                }, 
+                "signatures": {
+                    "signer": "pUMUiSMYs1xG62MmvcNGDnOlxuIGeUL1FsMklIhvDiaYbRfDKnSW8exfcVzOia9m0Hn7yi7kib2qq35FP4rPCQ=="
+                }
+            }
+        }, 
+        200
+    )
+}
+```

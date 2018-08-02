@@ -36,6 +36,7 @@ Command line interface for didery.py library.  Path to config file containing se
 @click.command()
 @click.option(
     '--incept',
+    '-i',
     multiple=False,
     is_flag=True,
     default=False,
@@ -43,12 +44,14 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--upload',
+    '-u',
     is_flag=True,
     default=False,
     help="Upload a new otp encrypted private key."
 )
 @click.option(
     '--rotate',
+    '-r',
     multiple=False,
     is_flag=True,
     default=False,
@@ -56,6 +59,7 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--update',
+    '-U',
     multiple=False,
     is_flag=True,
     default=False,
@@ -63,6 +67,7 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--retrieve',
+    '-R',
     multiple=False,
     is_flag=True,
     default=False,
@@ -70,6 +75,7 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--download',
+    '-d',
     multiple=False,
     is_flag=True,
     default=False,
@@ -77,6 +83,7 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--delete',
+    '-D',
     multiple=False,
     is_flag=True,
     default=False,
@@ -84,6 +91,7 @@ Command line interface for didery.py library.  Path to config file containing se
 )
 @click.option(
     '--remove',
+    '-m',
     multiple=False,
     is_flag=True,
     default=False,

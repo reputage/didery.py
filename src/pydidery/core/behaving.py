@@ -14,7 +14,10 @@ def outputResult(result, console, verbosity):
         if verbosity == console.Wordage.profuse:
             console.profuse("{}:\t{}\n".format(url, data))
         if verbosity == console.Wordage.concise:
-            console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
+            if data[1] == 0:
+                console.concise("{}:\tRequest Timed Out".format(url))
+            else:
+                console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
         if 300 > data[1] >= 200:
             successful += 1
 

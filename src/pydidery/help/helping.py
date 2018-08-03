@@ -158,7 +158,7 @@ def httpRequest(method=u'GET',
                 body=b'',
                 data=None,
                 store=None,
-                timeout=2.0,
+                timeout=10000.0,
                 buffer=False,):
     """
     Perform Async ReST request to Backend Server
@@ -216,6 +216,7 @@ def httpRequest(method=u'GET',
             console.terse("Error: Servicing client. '{0}'\n".format(ex))
             raise ex
         yield b''  # this is eventually yielded by wsgi app while waiting
+        store.advanceStamp(0.125)
 
     response = None  # in case timed out
     if client.responses:
@@ -238,7 +239,11 @@ def awaitAsync(generators):
             try:
                 next(generator)
             except StopIteration as si:
-                values[i] = (json.loads(si.value[0]), si.value[1])
+                if si.value:
+                    values[i] = (json.loads(si.value[0]), si.value[1])
+                else:
+                    values[i] = ({"error": "request timeout"}, 0)
+
                 remove.append(i)
 
         for val in remove:

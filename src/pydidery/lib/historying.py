@@ -13,7 +13,10 @@ from ..lib import generating as gen
 def __patronHelper(method="GET", path="history", headers=None, data=None):
     result = yield from h.httpRequest(method, path=path, headers=headers, data=data)
 
-    return result.get('body').decode("utf-8"), result.get('status')
+    if result:
+        return result['body'].decode(), result.get('status')
+    else:
+        return None
 
 
 # def getAllHistories(urls=None):

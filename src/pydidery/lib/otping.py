@@ -13,7 +13,10 @@ from ..lib import generating as gen
 def __patronHelper(method="GET", path="blob", headers=None, data=None):
     result = yield from h.httpRequest(method, path=path, headers=headers, data=data)
 
-    return result['body'].decode(), result['status']
+    if result:
+        return result['body'].decode(), result.get('status')
+    else:
+        return None
 
 
 # def getAllOtpBlobs(urls=None):

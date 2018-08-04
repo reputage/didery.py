@@ -66,6 +66,80 @@ class OtpData(DideryData):
         self.valid = verify64u(self.signature, self.bbody, self.vk)
 
 
+class ConsensusResult:
+    TIMEOUT = 0
+    SUCCESS = 1
+    ERROR = 2
+    FAILED = 3
+
+    """
+    Store info about a request and it's result
+    """
+    def __init__(self, url, req_status, response=None, http_status=None):
+        self.url = url
+        self.req_status = req_status
+        self.response = response
+        self.http_status = http_status
+
+    def description(self):
+        if self.req_status == ConsensusResult.TIMEOUT:
+            return "Request Timed Out"
+        elif self.req_status == ConsensusResult.SUCCESS:
+            return "Request Succeeded"
+        elif self.req_status == ConsensusResult.ERROR:
+            return "Error Handling Request. HTTP_{}".format(self.http_status)
+        elif self.req_status == ConsensusResult.FAILED:
+            return "Signature Validation Failed"
+
+
+class ConsensusResults:
+    def __init__(self, valid_data=None, sig_counts=None, results=None, num_valid=None):
+        self.valid_data = {}
+        self.sig_counts = {}
+        self.results = []
+        self.num_valid = 0
+        self.consensus = False
+
+        if valid_data:
+            self.valid_data = valid_data
+
+        if sig_counts:
+            self.sig_counts = sig_counts
+
+        if results:
+            self.results = results
+
+        if num_valid:
+            self.num_valid = num_valid
+
+    def incrementValid(self):
+        self.num_valid += 1
+
+    def addResult(self, url, req_status, response=None, http_status=None):
+        self.results.append(ConsensusResult(url, req_status, response, http_status))
+
+    def addTimeOut(self, url):
+        self.addResult(url, ConsensusResult.TIMEOUT)
+
+    def addError(self, url, response, http_status):
+        self.addResult(url, ConsensusResult.ERROR, response, http_status)
+
+    def addFailure(self, url, response, http_status):
+        self.addResult(url, ConsensusResult.FAILED, response, http_status)
+
+    def addSigCount(self, signature):
+        self.sig_counts[signature] = self.sig_counts.get(signature, 0) + 1
+
+    def addValidData(self, signature, data):
+        self.valid_data[signature] = data
+
+    def updateValidData(self, url, signature, data, http_status):
+        self.incrementValid()
+        self.addResult(url, ConsensusResult.SUCCESS, data, http_status)
+        self.addSigCount(signature)
+        self.addValidData(signature, data)
+
+
 def validateSignatures(data, dtype):
     """
         Validates signatures and data and then checks
@@ -76,41 +150,33 @@ def validateSignatures(data, dtype):
         :param dtype: string specifying to consense otp or history data
         :return: tuple if majority of signatures are valid else None
     """
-    valid_data = {}
-    sig_counts = {}
-    results = {}
-    num_valid = 0
+    validationResults = ConsensusResults()
 
     for url, datum in data.items():
-        # Check request succeeded
-        if datum[STATUS] != 200:
-            # Track result of data validation
-            results[url] = "{} Error".format(datum[STATUS])
+        response = datum[RESPONSE]
+        status = datum[STATUS]
+
+        if status == 0:
+            validationResults.addTimeOut(url)  # Request timed out
+            continue
+        elif status != 200:
+            validationResults.addError(url, response, status)  # Error with request
             continue
 
-        # Determine data type
         if dtype == "history":
-            datum = HistoryData(datum[RESPONSE])
+            datum = HistoryData(response)
         else:
-            datum = OtpData(datum[RESPONSE])
+            datum = OtpData(response)
 
         if datum.valid:
-            num_valid += 1
-            # keep track of data that belongs to signature
-            valid_data[datum.signature] = datum.data
-            # Count number of times the signature has been seen
-            sig_counts[datum.signature] = sig_counts.get(datum.signature, 0) + 1
-            # Track result of data validation
-            results[url] = "Data Validated"
+            validationResults.updateValidData(url, datum.signature, datum.data, status)  # Signature validated
         else:
-            # Track result of data validation
-            results[url] = "Signature Validation Failed"
+            validationResults.addFailure(url, datum.data, status)  # Signature validation failed
 
-    # check that a majority of signatures are valid
-    if len(data) * MAJORITY > num_valid:
-        return None, None, results
-    else:
-        return valid_data, sig_counts, results
+    if len(data) * MAJORITY <= validationResults.num_valid > 0:  # check that a majority of signatures are valid
+        validationResults.consensus = True
+
+    return validationResults
 
 
 def consense(data, dtype="history"):

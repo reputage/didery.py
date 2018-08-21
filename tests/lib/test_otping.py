@@ -1,4 +1,4 @@
-import arrow
+import pytest
 
 try:
     import simplejson as json
@@ -31,10 +31,40 @@ def testPostOtpBlob():
     assert result[url2]["http_status"] == 201
 
 
+def testPostOtpBlobNoUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.postOtpBlob(otpData, sk, None)
+
+
+def testPostOtpBlobEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.postOtpBlob(otpData, sk, [])
+
+
+def testPostOtpBlobNoSk():
+    with pytest.raises(ValueError) as ex:
+        otp.postOtpBlob(otpData, None, urls)
+
+
+def testPostOtpBlobEmptySk():
+    with pytest.raises(ValueError) as ex:
+        otp.postOtpBlob(otpData, "", urls)
+
+
 def testGetOtpBlob():
     data, result = otp.getOtpBlob(did, urls)
 
     assert data['otp_data'] == otpData
+
+
+def testGetOtpBlobNoUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.getOtpBlob(did, None)
+
+
+def testGetOtpBlobEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.getOtpBlob(did, [])
 
 
 def testPutOtpBlob():
@@ -46,6 +76,26 @@ def testPutOtpBlob():
     assert result[url2]["data"]["otp_data"] == otpData
 
 
+def testPutOtpBlobNoUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.putOtpBlob(otpData, sk, None)
+
+
+def testPutOtpBlobEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.putOtpBlob(otpData, sk, [])
+
+
+def testPutOtpBlobNoSk():
+    with pytest.raises(ValueError) as ex:
+        otp.putOtpBlob(otpData, None, urls)
+
+
+def testPutOtpBlobEmptySk():
+    with pytest.raises(ValueError) as ex:
+        otp.putOtpBlob(otpData, "", urls)
+
+
 def testRemoveOtpBlob():
     result = otp.removeOtpBlob(did, sk, urls)
 
@@ -53,3 +103,23 @@ def testRemoveOtpBlob():
     assert result[url1]["data"]["deleted"]["otp_data"] == otpData
     assert result[url2]["http_status"] == 200
     assert result[url2]["data"]["deleted"]["otp_data"] == otpData
+
+
+def testRemoveOtpBlobNoUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.removeOtpBlob(did, sk, None)
+
+
+def testRemoveOtpBlobEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        otp.removeOtpBlob(did, sk, [])
+
+
+def testRemoveOtpBlobNoSk():
+    with pytest.raises(ValueError) as ex:
+        otp.removeOtpBlob(did, None, urls)
+
+
+def testRemoveOtpBlobEmptySk():
+    with pytest.raises(ValueError) as ex:
+        otp.removeOtpBlob(did, "", urls)

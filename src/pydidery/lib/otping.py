@@ -32,6 +32,9 @@ def __patronHelper(method="GET", path="blob", headers=None, data=None):
 
 
 def getOtpBlob(did, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
     generators = {}
 
     for url in urls:
@@ -44,6 +47,12 @@ def getOtpBlob(did, urls):
 
 
 def postOtpBlob(data, sk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
     generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
@@ -59,6 +68,12 @@ def postOtpBlob(data, sk, urls):
 
 
 def putOtpBlob(data, sk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
     generators = {}
     data['changed'] = str(arrow.utcnow())
     did = data["id"]
@@ -75,6 +90,12 @@ def putOtpBlob(data, sk, urls):
 
 
 def removeOtpBlob(did, sk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
     generators = {}
     data = {"id": did}
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()

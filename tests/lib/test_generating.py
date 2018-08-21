@@ -39,13 +39,13 @@ def testKey64uToKey():
 
 
 def testKeyGen():
-    # Test with default seed value
     vk, sk = gen.keyGen()
 
     assert vk
     assert sk
 
-    # Test with provided seed
+
+def testKeyGenWithSeed():
     seed = b'\x8dh\xf3\xa0!\xd1\xcd\xc0b\x8c^\x1d\xbcg>\xe1S\x12\xc7\xcb\xbc\x0eTOz@\xdb} \xba\x06\x04'
 
     vk, sk = gen.keyGen(seed)
@@ -70,7 +70,6 @@ def testSignResource():
 
 
 def testHistoryGen():
-    # Test with default seed value
     history = gen.historyGen()
 
     assert history
@@ -83,7 +82,8 @@ def testHistoryGen():
     assert history[0]["signers"][0] == history[1]
     assert history[0]["signers"][1] == history[3]
 
-    # Test with provided seed
+
+def testHistoryGenWithSeed():
     seed = b'\x8dh\xf3\xa0!\xd1\xcd\xc0b\x8c^\x1d\xbcg>\xe1S\x12\xc7\xcb\xbc\x0eTOz@\xdb} \xba\x06\x04'
 
     history = gen.historyGen(seed)

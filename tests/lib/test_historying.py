@@ -1,4 +1,4 @@
-import arrow
+import pytest
 
 try:
     import simplejson as json
@@ -28,10 +28,40 @@ def testPostHistory():
     assert result[url2]["http_status"] == 201
 
 
+def testPostHistoryNoUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.postHistory(history, sk1, None)
+
+
+def testPostHistoryEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.postHistory(history, sk1, [])
+
+
+def testPostHistoryNoSk():
+    with pytest.raises(ValueError) as ex:
+        hist.postHistory(history, None, urls)
+
+
+def testPostHistoryEmptySk():
+    with pytest.raises(ValueError) as ex:
+        hist.postHistory(history, "", urls)
+
+
 def testGetHistory():
     data, results = hist.getHistory(did, urls)
 
     assert data['history'] == history
+
+
+def testGetHistoryNoUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.getHistory(did, None)
+
+
+def testGetHistoryEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.getHistory(did, [])
 
 
 def testPutHistory():
@@ -46,6 +76,36 @@ def testPutHistory():
     assert result[url2]["data"]["history"] == history
 
 
+def testPutHistoryNoUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, sk1, sk2, None)
+
+
+def testPutHistoryEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, sk1, sk2, [])
+
+
+def testPutHistoryNoSk():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, None, sk2, urls)
+
+
+def testPutHistoryEmptySk():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, "", sk2, urls)
+
+
+def testPutHistoryNoPsk():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, sk1, None, urls)
+
+
+def testPutHistoryEmptyPsk():
+    with pytest.raises(ValueError) as ex:
+        hist.putHistory(history, sk1, "", urls)
+
+
 def testDeleteHistory():
     result = hist.deleteHistory(did, sk2, urls)
 
@@ -53,3 +113,23 @@ def testDeleteHistory():
     assert result[url1]["data"]["deleted"]["history"] == history
     assert result[url2]["http_status"] == 200
     assert result[url2]["data"]["deleted"]["history"] == history
+
+
+def testDeleteHistoryNoUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.deleteHistory(did, sk2, None)
+
+
+def testDeleteHistoryEmptyUrls():
+    with pytest.raises(ValueError) as ex:
+        hist.deleteHistory(did, sk2, [])
+
+
+def testDeleteHistoryNoSk():
+    with pytest.raises(ValueError) as ex:
+        hist.deleteHistory(did, None, urls)
+
+
+def testDeleteHistoryEmptySk():
+    with pytest.raises(ValueError) as ex:
+        hist.deleteHistory(did, "", urls)

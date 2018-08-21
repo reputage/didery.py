@@ -32,6 +32,9 @@ def __patronHelper(method="GET", path="history", headers=None, data=None):
 
 
 def getHistory(did, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
     generators = {}
 
     for url in urls:
@@ -44,6 +47,12 @@ def getHistory(did, urls):
 
 
 def postHistory(data, sk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
     generators = {}
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
@@ -59,6 +68,15 @@ def postHistory(data, sk, urls):
 
 
 def putHistory(data, sk, psk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
+    if not psk:
+        raise ValueError("Pre-rotated signing key required.")
+
     generators = {}
     did = data["id"]
     data['changed'] = str(arrow.utcnow())
@@ -78,6 +96,12 @@ def putHistory(data, sk, psk, urls):
 
 
 def deleteHistory(did, sk, urls):
+    if not urls:
+        raise ValueError("At least one url required.")
+
+    if not sk:
+        raise ValueError("Signing key required.")
+
     generators = {}
     data = {"id": did}
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()

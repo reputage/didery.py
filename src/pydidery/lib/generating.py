@@ -70,6 +70,14 @@ def keyGen(seed=None):
 
 
 def signResource(resource, sKey):
+    """
+    signResource accepts a byte string and an EdDSA (Ed25519) key in the form of a byte string
+    and returns a base64 url-file safe signature.
+
+    :param resource: byte string to be signed
+    :param sKey: signing/private key from EdDSA (Ed25519) key
+    :return: url-file safe base64 signature string
+    """
     sig = libnacl.crypto_sign(resource, sKey)
     sig = sig[:libnacl.crypto_sign_BYTES]
 

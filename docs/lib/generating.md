@@ -151,6 +151,32 @@ qNrFUd0pqLbTLIIo_xXpQFuKrqFJe45GO_dMt_OqPITRG8JoC8cict7MI_3uNoeg-iQAZ8_ktOnAC9xH
 qNjuiN_MijfK8eIvJJ4mf7IRMh7noEK92KAUNXzNPPXSFmlLIGixcePnZORx5V0mg8aYa3boPkSsAQ7Qjmb5uA==
 ```
 
+### generating.signResource(resource, sKey)
+signResource accepts a byte string and an EdDSA (Ed25519) key in the form of a byte string and returns a base64 url-file safe signature.
+
+**resource** (_required_)- byte string to be signed
+**sKey** (_required_)- signing/private key from EdDSA (Ed25519) key
+
+**returns** - url-file safe base64 signature string
+
+#### Example
+```python
+import pydidery.lib.generating as gen
+
+# generate key pair with custom seed
+vk, sk = gen.keyGen()
+resource = b'{"data":"Test!"}'
+
+signature = gen.signResource(resource, sk)
+
+print(signature)
+```
+
+#### Output
+```
+D4Z8_zeX42n0H_MQQyZWyQ3gW5me1iL4dZetRvo-0_f3tINIcKWrmrtjTFykWhNhHk36Ur2KlVmkdGRgtp8vDQ==
+```
+
 ### generating.historyGen(seed=None):
 historyGen generates a new key history dictionary and returns the history along with all generated keys. If a seed is not provided libnacl's randombytes() function will be used to generate a seed.
 

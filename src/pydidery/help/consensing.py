@@ -96,9 +96,9 @@ class ConsensusResults:
     def __init__(self, valid_data=None, sig_counts=None, results=None, num_valid=None):
         self.valid_data = {}
         self.sig_counts = {}
-        self.results = []
+        self.results = {}
         self.num_valid = 0
-        self.consensus = False
+        self.consensus = None
 
         if valid_data:
             self.valid_data = valid_data
@@ -116,7 +116,7 @@ class ConsensusResults:
         self.num_valid += 1
 
     def addResult(self, url, req_status, response=None, http_status=None):
-        self.results.append(ConsensusResult(url, req_status, response, http_status))
+        self.results[url] = ConsensusResult(url, req_status, response, http_status)
 
     def addTimeOut(self, url):
         self.addResult(url, ConsensusResult.TIMEOUT)
@@ -173,9 +173,6 @@ def validateSignatures(data, dtype):
         else:
             validationResults.addFailure(url, datum.data, status)  # Signature validation failed
 
-    if len(data) * MAJORITY <= validationResults.num_valid > 0:  # check that a majority of signatures are valid
-        validationResults.consensus = True
-
     return validationResults
 
 
@@ -193,18 +190,10 @@ def consense(data, dtype="history"):
     if not data:
         raise ValueError("data cannot be None.")
 
-    valid_data, sig_counts, results = validateSignatures(data, dtype)
+    results = validateSignatures(data, dtype)
 
-    # Not enough valid signatures
-    if valid_data is None:
-        return None, results
-
-    # All signatures are equal
-    if len(valid_data) == 1:
-        return valid_data.popitem()[1], results
-
-    for sig, count in sig_counts.items():
+    for sig, count in results.sig_counts.items():
         if count >= len(data) * MAJORITY:
-            return valid_data[sig], results
+            results.consensus = results.valid_data[sig]
 
-    return None, results
+    return results.consensus, results.results

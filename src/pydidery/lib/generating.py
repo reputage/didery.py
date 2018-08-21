@@ -15,6 +15,9 @@ def didGen(vk, method="dad"):
     :param method: W3C did method string. Defaults to "dad".
     :return: W3C DID string
     """
+    if vk is None:
+        return None
+
     # convert verkey to jsonable unicode string of base64 url-file safe
     vk64u = keyToKey64u(vk)
 
@@ -29,6 +32,9 @@ def didGen64(vk64u, method="dad"):
     :param method: W3C did method string. Defaults to "dad".
     :return: W3C DID string
     """
+    if vk64u is None:
+        return None
+
     return "did:{0}:{1}".format(method, vk64u)
 
 
@@ -39,6 +45,9 @@ def keyToKey64u(key):
     :param key: 32 byte string
     :return: base64 url-file safe string
     """
+    if key is None:
+        return None
+
     return base64.urlsafe_b64encode(key).decode("utf-8")
 
 
@@ -49,6 +58,9 @@ def key64uToKey(key64u):
     :param key64u: base64 ulr-file safe string
     :return: byte string
     """
+    if key64u is None:
+        return None
+
     return base64.urlsafe_b64decode(key64u.encode("utf-8"))
 
 
@@ -78,6 +90,9 @@ def signResource(resource, sKey):
     :param sKey: signing/private key from EdDSA (Ed25519) key
     :return: url-file safe base64 signature string
     """
+    if resource is None:
+        return None
+
     sig = libnacl.crypto_sign(resource, sKey)
     sig = sig[:libnacl.crypto_sign_BYTES]
 

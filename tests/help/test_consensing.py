@@ -46,18 +46,23 @@ def testvalidateSignatures():
     datum1_sig = gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
     bad_sig = gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1]))
     data = {
-        "http://localhost:8000": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": bad_sig
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": bad_sig
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": datum1_sig
+                }
+            }, "http_status": 200
+        }
     }
 
     results = consensing.validateSignatures(data, "history")
@@ -81,15 +86,15 @@ def testvalidateSignatures():
     assert results.sig_counts == {}
 
     # Test that majority of valid data passes
-    data["http://localhost:8081"] = (
-        {
+    data["http://localhost:8081"] = {
+        "data": {
             "history": datum1[HISTORY],
             "signatures": {
                 "signer": datum1_sig
             }
         },
-        200
-    )
+        "http_status": 200
+    }
 
     results = consensing.validateSignatures(data, "history")
 
@@ -112,27 +117,36 @@ def testvalidateSignatures():
     bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     datum1_sig = gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
     data = {
-        "http://localhost:8000": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": datum1_sig
-            }
-        }, 200),
-        "http://localhost:8081": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": datum1_sig
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory2, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": datum1_sig
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": datum1_sig
+                }
+            },
+            "http_status": 200
+        }
     }
 
     results = consensing.validateSignatures(data, "history")
@@ -151,12 +165,15 @@ def testvalidateSignatures():
 
     # Test all valid signatures, but conflicting data
     datum2_sig = gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-    data["http://localhost:8000"] = ({
-        "history": datum2[HISTORY],
-        "signatures": {
-            "signer": datum2_sig
-        }
-    }, 200)
+    data["http://localhost:8000"] = {
+        "data": {
+            "history": datum2[HISTORY],
+            "signatures": {
+                "signer": datum2_sig
+            }
+        },
+        "http_status": 200
+    }
 
     results = consensing.validateSignatures(data, "history")
 
@@ -181,12 +198,15 @@ def testvalidateSignatures():
     assert results.sig_counts[datum2_sig] == 1
 
     # Test all valid signatures but incomplete majority
-    data["http://localhost:8001"] = ({
-        "history": datum2[HISTORY],
-        "signatures": {
-            "signer": datum2_sig
-        }
-    }, 200)
+    data["http://localhost:8001"] = {
+        "data": {
+            "history": datum2[HISTORY],
+            "signatures": {
+                "signer": datum2_sig
+            }
+        },
+        "http_status": 200
+    }
 
     results = consensing.validateSignatures(data, "history")
 
@@ -223,26 +243,33 @@ def testConsense():
     bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     data = {
-        "http://localhost:8000": ({
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200),
-        "http://localhost:8081": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum2[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            }, "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            }, "http_status": 200
+        }
     }
 
     assert consensing.consense(data)[0] == {
@@ -255,52 +282,70 @@ def testConsense():
 
     # Test incomplete majority
     data = {
-        "http://localhost:8000": ({
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": gen.historyGen()[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum2[SK1]))
-            }
-        }, 200),
-        "http://localhost:8081": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum2[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": gen.historyGen()[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        }
     }
 
     assert consensing.consense(data)[0] is None
 
     # Test all equal
     data = {
-        "http://localhost:8000": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200),
-        "http://localhost:8081": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        }
     }
 
     assert consensing.consense(data)[0] == {
@@ -313,32 +358,44 @@ def testConsense():
 
     # Test half and half
     data = {
-        "http://localhost:8000": ({
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            }
-        }, 200),
-        "http://localhost:8001": ({
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-            }
-        }, 200),
-        "http://localhost:8080": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200),
-        "http://localhost:8081": ({
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum2[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8001": {
+            "data": {
+                "history": datum2[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        }
     }
 
     assert consensing.consense(data)[0] is None
@@ -356,26 +413,35 @@ def testConsenseResults():
     bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     data = {
-        "http://localhost:8000": ({
-                                      "history": datum2[HISTORY],
-                                      "signatures": {
-                                          "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                                      }
-                                  }, 200),
-        "http://localhost:8080": ({
-                                      "history": datum1[HISTORY],
-                                      "signatures": {
-                                          "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                                          "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                                      }
-                                  }, 200),
-        "http://localhost:8081": ({
-                                      "history": datum1[HISTORY],
-                                      "signatures": {
-                                          "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                                          "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                                      }
-                                  }, 200)
+        "http://localhost:8000": {
+            "data": {
+                "history": datum2[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8080": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        },
+        "http://localhost:8081": {
+            "data": {
+                "history": datum1[HISTORY],
+                "signatures": {
+                    "signer": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
+                    "rotation": gen.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+                }
+            },
+            "http_status": 200
+        }
     }
 
     results = consensing.consense(data)[1]
@@ -395,12 +461,15 @@ def testConsenseResults():
         assert results[url].req_status == status
 
     # Test failed signature validation
-    data["http://localhost:8000"] = ({
-                                      "history": datum2[HISTORY],
-                                      "signatures": {
-                                          "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK2]))
-                                      }
-                                  }, 200)
+    data["http://localhost:8000"] = {
+        "data": {
+            "history": datum2[HISTORY],
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK2]))
+            }
+        },
+        "http_status": 200
+    }
 
     results = consensing.consense(data)[1]
 
@@ -414,12 +483,15 @@ def testConsenseResults():
         assert results[url].req_status == status
 
     # Test failed request
-    data["http://localhost:8000"] = ({
-                                         "history": datum2[HISTORY],
-                                         "signatures": {
-                                             "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                                         }
-                                     }, 400)
+    data["http://localhost:8000"] = {
+        "data": {
+            "history": datum2[HISTORY],
+            "signatures": {
+                "signer": gen.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+            }
+        },
+        "http_status": 400
+    }
 
     results = consensing.consense(data)[1]
 

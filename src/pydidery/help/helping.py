@@ -240,9 +240,9 @@ def awaitAsync(generators):
                 next(generator)
             except StopIteration as si:
                 if si.value:
-                    values[i] = (json.loads(si.value[0]), si.value[1])
+                    values[i] = {"data": json.loads(si.value[0]), "http_status": si.value[1]}
                 else:
-                    values[i] = ({"error": "request timeout"}, 0)
+                    values[i] = {"data": {"error": "request timeout"}, "http_status": 0}
 
                 remove.append(i)
 

@@ -6,8 +6,6 @@ except ImportError:
 from .helping import verify64u, validateDid
 
 MAJORITY = 2 / 3
-RESPONSE = 0
-STATUS = 1
 
 
 class DideryData:
@@ -153,8 +151,8 @@ def validateSignatures(data, dtype):
     validationResults = ConsensusResults()
 
     for url, datum in data.items():
-        response = datum[RESPONSE]
-        status = datum[STATUS]
+        response = datum["data"]
+        status = datum["http_status"]
 
         if status == 0:
             validationResults.addTimeOut(url)  # Request timed out

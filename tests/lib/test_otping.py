@@ -27,8 +27,8 @@ urls = ["http://localhost:8080", "http://localhost:8000"]
 def testPostOtpBlob():
     result = otp.postOtpBlob(otpData, sk, urls)
 
-    assert result[url1][1] == 201
-    assert result[url2][1] == 201
+    assert result[url1]["http_status"] == 201
+    assert result[url2]["http_status"] == 201
 
 
 def testGetOtpBlob():
@@ -40,7 +40,16 @@ def testGetOtpBlob():
 def testPutOtpBlob():
     result = otp.putOtpBlob(otpData, sk, urls)
 
-    assert result[url1][1] == 200
-    assert result[url1][0]["otp_data"] == otpData
-    assert result[url2][1] == 200
-    assert result[url2][0]["otp_data"] == otpData
+    assert result[url1]["http_status"] == 200
+    assert result[url1]["data"]["otp_data"] == otpData
+    assert result[url2]["http_status"] == 200
+    assert result[url2]["data"]["otp_data"] == otpData
+
+
+def testRemoveOtpBlob():
+    result = otp.removeOtpBlob(did, sk, urls)
+
+    assert result[url1]["http_status"] == 200
+    assert result[url1]["data"]["deleted"]["otp_data"] == otpData
+    assert result[url2]["http_status"] == 200
+    assert result[url2]["data"]["deleted"]["otp_data"] == otpData

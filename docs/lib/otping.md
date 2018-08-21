@@ -32,34 +32,34 @@ print(result)
 ```
 
 #### Output
-```
+```json
 {
-    'http://localhost:8000': (
-        {
-            'otp_data': {
-                'id': 'did:dad:V7A6qo1D8VG7ZXF2h1vVeANPHrcmljPgpBNb2c4g2wA=', 
-                'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                'changed': '2018-07-16T21:16:50.056107+00:00'
+    "http://localhost:8000": {
+        "data": {
+            "otp_data": {
+                "id": "did:dad:V7A6qo1D8VG7ZXF2h1vVeANPHrcmljPgpBNb2c4g2wA=", 
+                "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                "changed": "2018-07-16T21:16:50.056107+00:00"
             }, 
-            'signatures': {
-                'signer': 'b1M0f78dfMWYBpDaM7sQujmGh1HWlcLjTW7BTrIyCoXBXsrOltEXa_K--Sblox1BCoBpSZ8k0uvN0j88P12DAQ=='
+            "signatures": {
+                "signer": "b1M0f78dfMWYBpDaM7sQujmGh1HWlcLjTW7BTrIyCoXBXsrOltEXa_K--Sblox1BCoBpSZ8k0uvN0j88P12DAQ=="
             }
         }, 
-        201
-    ), 
-    'http://localhost:8080': (
-        {
-            'otp_data': {
-                'id': 'did:dad:V7A6qo1D8VG7ZXF2h1vVeANPHrcmljPgpBNb2c4g2wA=', 
-                'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                'changed': '2018-07-16T21:16:50.056107+00:00'
+        "http_status": 201
+    }, 
+    "http://localhost:8080": {
+        "data": {
+            "otp_data": {
+                "id": "did:dad:V7A6qo1D8VG7ZXF2h1vVeANPHrcmljPgpBNb2c4g2wA=", 
+                "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                "changed": "2018-07-16T21:16:50.056107+00:00"
             }, 
-            'signatures': {
-                'signer': 'b1M0f78dfMWYBpDaM7sQujmGh1HWlcLjTW7BTrIyCoXBXsrOltEXa_K--Sblox1BCoBpSZ8k0uvN0j88P12DAQ=='
+            "signatures": {
+                "signer": "b1M0f78dfMWYBpDaM7sQujmGh1HWlcLjTW7BTrIyCoXBXsrOltEXa_K--Sblox1BCoBpSZ8k0uvN0j88P12DAQ=="
             }
         }, 
-        201
-    )
+        "http_status": 201
+    }
 }
 ```
 
@@ -97,34 +97,34 @@ print(result)
 ```
 
 #### Output
-```
+```json
 {
-    'http://localhost:8000': (
-        {
-            'otp_data': {
-                'id': 'did:dad:Hz3XqAcXUPhiGH_OH65DfBVikYyT8A27Oe6X203Ktp8=', 
-                'blob': 'OtjioHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                'changed': '2018-07-16T21:27:53.028815+00:00'
+    "http://localhost:8000": {
+        "data": {
+            "otp_data": {
+                "id": "did:dad:Hz3XqAcXUPhiGH_OH65DfBVikYyT8A27Oe6X203Ktp8=", 
+                "blob": "OtjioHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                "changed": "2018-07-16T21:27:53.028815+00:00"
             }, 
-            'signatures': {
-                'signer': '-UgO0QssuQbhOKPJxB4JCqfWho1lwUh018C0Rxkk2ZI_PDJKqPNfS9DwUNV1JbYeZMpO-RC-zhOdgWKxjr1dBg=='
+            "signatures": {
+                "signer": "-UgO0QssuQbhOKPJxB4JCqfWho1lwUh018C0Rxkk2ZI_PDJKqPNfS9DwUNV1JbYeZMpO-RC-zhOdgWKxjr1dBg=="
             }
         }, 
-        200
-    ), 
-    'http://localhost:8080': (
-        {
-            'otp_data': {
-                'id': 'did:dad:Hz3XqAcXUPhiGH_OH65DfBVikYyT8A27Oe6X203Ktp8=', 
-                'blob': 'OtjioHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                'changed': '2018-07-16T21:27:53.028815+00:00'
+        "http_status": 200
+    }, 
+    "http://localhost:8080": {
+        "data": {
+            "otp_data": {
+                "id": "did:dad:Hz3XqAcXUPhiGH_OH65DfBVikYyT8A27Oe6X203Ktp8=", 
+                "blob": "OtjioHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                "changed": "2018-07-16T21:27:53.028815+00:00"
             }, 
-            'signatures': {
-                'signer': '-UgO0QssuQbhOKPJxB4JCqfWho1lwUh018C0Rxkk2ZI_PDJKqPNfS9DwUNV1JbYeZMpO-RC-zhOdgWKxjr1dBg=='
+            "signatures": {
+                "signer": "-UgO0QssuQbhOKPJxB4JCqfWho1lwUh018C0Rxkk2ZI_PDJKqPNfS9DwUNV1JbYeZMpO-RC-zhOdgWKxjr1dBg=="
             }
         }, 
-        200
-    )
+        "http_status": 200
+    }
 }
 ```
 
@@ -167,14 +167,14 @@ else:
 ``` 
 
 #### Output
-```
+```json
 {
-    'otp_data': {
-        'id': 'did:dad:xe5I8KgW7OkeZ6x5oHtfx5NQyJWOnoFZ_djOZr0dGz0=', 
-        'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 'changed': '2018-07-16T21:38:04.899640+00:00'
+    "otp_data": {
+        "id": "did:dad:xe5I8KgW7OkeZ6x5oHtfx5NQyJWOnoFZ_djOZr0dGz0=", 
+        "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", "changed": "2018-07-16T21:38:04.899640+00:00"
     }, 
-    'signatures': {
-        'signer': 'Az-qzuaOu1xelHU9quxPMZynZZAdc1BzqUchmJVIPUsFB7QdLBnHB_CXNdGK6okkDaCaxXCsyk4icQBW_dqLDA=='
+    "signatures": {
+        "signer": "Az-qzuaOu1xelHU9quxPMZynZZAdc1BzqUchmJVIPUsFB7QdLBnHB_CXNdGK6okkDaCaxXCsyk4icQBW_dqLDA=="
     }
 }
 ```
@@ -214,37 +214,37 @@ print(response)
 ```  
 
 #### Output
-```
+```json
 {
-    'http://localhost:8000': (
-        {
-            'deleted': {
-                'otp_data': {
-                    'id': 'did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=', 
-                    'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                    'changed': '2018-08-02T21:45:30.795185+00:00'
+    "http://localhost:8000": {
+        "data": {
+            "deleted": {
+                "otp_data": {
+                    "id": "did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=", 
+                    "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                    "changed": "2018-08-02T21:45:30.795185+00:00"
                 }, 
-                'signatures': {
-                    'signer': '9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=='
+                "signatures": {
+                    "signer": "9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=="
                 }
             }
         }, 
-        200
-    ), 
-    'http://localhost:8080': (
-        {
-            'deleted': {
-                'otp_data': {
-                    'id': 'did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=', 
-                    'blob': 'AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw', 
-                    'changed': '2018-08-02T21:45:30.795185+00:00'
+        "http_status": 200
+    }, 
+    "http://localhost:8080": {
+        "data": {
+            "deleted": {
+                "otp_data": {
+                    "id": "did:dad:pq4ovXgMGYILIfW9Vx55-ebugLWA-7Ii6qLnPUjZVFk=", 
+                    "blob": "AeYbsHot0pmdWAcgTo5sD8iAuSQAfnH5U6wiIGpVNJQQoYKBYrPPxAoIc1i5SHCIDS8KFFgf8i0tDq8XGizaCgo9yjuKHHNJZFi0QD9K6Vpt6fP0XgXlj8z_4D-7s3CcYmuoWAh6NVtYaf_GWw_2sCrHBAA2mAEsml3thLmu50Dw", 
+                    "changed": "2018-08-02T21:45:30.795185+00:00"
                 }, 
-                'signatures': {
-                    'signer': '9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=='
+                "signatures": {
+                    "signer": "9ZIRyzBh9WkVaksQoUlBRB_Zrlg8kjcepjcOvPTSjj784uYVGusWiDkSq3nOyTp78v_eHEbzDEKFw6WscN6uAw=="
                 }
             }
         }, 
-        200
-    )
+        "http_status": 200
+    }
 }
 ```

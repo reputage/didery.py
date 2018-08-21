@@ -24,8 +24,8 @@ urls = ["http://localhost:8080", "http://localhost:8000"]
 def testPostHistory():
     result = hist.postHistory(history, sk1, urls)
 
-    assert result[url1][1] == 201
-    assert result[url2][1] == 201
+    assert result[url1]["http_status"] == 201
+    assert result[url2]["http_status"] == 201
 
 
 def testGetHistory():
@@ -40,16 +40,16 @@ def testPutHistory():
 
     result = hist.putHistory(history, sk1, sk2, urls)
 
-    assert result[url1][1] == 200
-    assert result[url1][0]["history"] == history
-    assert result[url2][1] == 200
-    assert result[url2][0]["history"] == history
+    assert result[url1]["http_status"] == 200
+    assert result[url1]["data"]["history"] == history
+    assert result[url2]["http_status"] == 200
+    assert result[url2]["data"]["history"] == history
 
 
 def testDeleteHistory():
     result = hist.deleteHistory(did, sk2, urls)
 
-    assert result[url1][1] == 200
-    assert result[url1][0]["deleted"]["history"] == history
-    assert result[url2][1] == 200
-    assert result[url2][0]["deleted"]["history"] == history
+    assert result[url1]["http_status"] == 200
+    assert result[url1]["data"]["deleted"]["history"] == history
+    assert result[url2]["http_status"] == 200
+    assert result[url2]["data"]["deleted"]["history"] == history

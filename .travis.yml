@@ -13,6 +13,7 @@ before_install:
   - cd ..
 
 install:
+  # In the future we may need to change this to pull didery from github instead of Pypi
   - pip install didery
   - pip install -e ../didery.py
   - dideryd &
@@ -20,4 +21,4 @@ install:
 
 # Run Tests
 script:
-  - pytest tests/ -vv 
+  - pytest tests/ -vv

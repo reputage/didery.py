@@ -1,6 +1,7 @@
 ![didery logo](https://github.com/reputage/didery.js/blob/dev/logo/didery.png)
 
 [![Documentation Status](https://readthedocs.org/projects/diderypy/badge/?version=latest)](https://diderypy.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/reputage/didery.py.svg?branch=master)](https://travis-ci.org/reputage/didery.py)
 
 # Didery.py
 Didery.py is a python library and command line wrapper for communicating with didery servers.  It handles broadcasting data and polling data from remote didery servers and verifying consensus on the returned data.

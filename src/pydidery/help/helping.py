@@ -158,7 +158,7 @@ def httpRequest(method=u'GET',
                 body=b'',
                 data=None,
                 store=None,
-                timeout=10000.0,
+                timeout=1000.0,
                 buffer=False,):
     """
     Perform Async ReST request to Backend Server

@@ -363,7 +363,7 @@ def historyInit():
 
     click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
                  'Make a copy and store them securely. \n'
-                 'The file will be deleted after you enter a key')
+                 'The file will be deleted after pressing any key+Enter')
 
     os.remove('didery.keys.json')
 
@@ -385,7 +385,7 @@ def keyery():
 
     click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
                  'Make a copy and store them securely. \n'
-                 'The file will be deleted after you enter a key')
+                 'The file will be deleted after pressing any key+Enter')
 
     os.remove('didery.keys.json')
 

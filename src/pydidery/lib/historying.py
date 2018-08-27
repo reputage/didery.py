@@ -7,6 +7,7 @@ except ImportError:
 
 from ..help import helping as h
 from ..help import consensing
+from ..help import signing as sign
 from ..lib import generating as gen
 
 
@@ -32,6 +33,7 @@ def __patronHelper(method="GET", path="history", headers=None, data=None):
 
 
 def getHistory(did, urls):
+    consense = consensing.Consense()
     if not urls:
         raise ValueError("At least one url required.")
 
@@ -39,11 +41,11 @@ def getHistory(did, urls):
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "history", did)
-        generators[url] = __patronHelper(path=endpoint)
+        generators[endpoint] = __patronHelper(path=endpoint)
 
     data = h.awaitAsync(generators)
 
-    return consensing.consense(data, "history")
+    return consense.consense(data)
 
 
 def postHistory(data, sk, urls):
@@ -57,12 +59,12 @@ def postHistory(data, sk, urls):
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
-        "Signature": 'signer="{0}"'.format(gen.signResource(bdata, gen.key64uToKey(sk)))
+        "Signature": 'signer="{0}"'.format(sign.signResource(bdata, gen.key64uToKey(sk)))
     }
 
     for url in urls:
         endpoint = "{0}/{1}".format(url, "history")
-        generators[url] = __patronHelper(method="POST", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="POST", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -83,14 +85,14 @@ def putHistory(data, sk, psk, urls):
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
         "Signature": 'signer="{0}"; rotation="{1}"'.format(
-            gen.signResource(bdata, gen.key64uToKey(sk)),
-            gen.signResource(bdata, gen.key64uToKey(psk))
+            sign.signResource(bdata, gen.key64uToKey(sk)),
+            sign.signResource(bdata, gen.key64uToKey(psk))
         )
     }
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "history", did)
-        generators[url] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -107,12 +109,12 @@ def deleteHistory(did, sk, urls):
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
         "Signature": 'signer="{0}"'.format(
-            gen.signResource(bdata, gen.key64uToKey(sk))
+            sign.signResource(bdata, gen.key64uToKey(sk))
         )
     }
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "history", did)
-        generators[url] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)

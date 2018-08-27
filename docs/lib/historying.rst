@@ -208,7 +208,7 @@ Example
     if data is None:
         # Consensus could not be reached. Print results for each url
         for url, result in results.items():
-            print("{}:\t{}".format(url, result.description()))
+            print("{}:\t{}".format(url, result))
     else:
         print(data)
 

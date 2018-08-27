@@ -14,18 +14,18 @@ from pydidery.lib import generating as gen
 from pydidery.lib import historying as hist
 
 history, vk1, sk1, vk2, sk2 = gen.historyGen()
-vk3, sk3 = gen.keyGen()
+vk3, sk3, did3 = gen.keyGen()
 did = history['id']
 
-url1, url2 = "http://localhost:8080", "http://localhost:8000"
+url1, url2 = "http://localhost:8080/history", "http://localhost:8000/history"
 urls = ["http://localhost:8080", "http://localhost:8000"]
 
 
 def testPostHistory():
     result = hist.postHistory(history, sk1, urls)
 
-    assert result[url1]["http_status"] == 201
-    assert result[url2]["http_status"] == 201
+    assert result[url1].status == 201
+    assert result[url2].status == 201
 
 
 def testPostHistoryNoUrls():
@@ -70,10 +70,10 @@ def testPutHistory():
 
     result = hist.putHistory(history, sk1, sk2, urls)
 
-    assert result[url1]["http_status"] == 200
-    assert result[url1]["data"]["history"] == history
-    assert result[url2]["http_status"] == 200
-    assert result[url2]["data"]["history"] == history
+    assert result[url1+"/"+history["id"]].status == 200
+    assert result[url1+"/"+history["id"]].response.body == history
+    assert result[url2+"/"+history["id"]].status == 200
+    assert result[url2+"/"+history["id"]].response.body == history
 
 
 def testPutHistoryNoUrls():
@@ -109,10 +109,10 @@ def testPutHistoryEmptyPsk():
 def testDeleteHistory():
     result = hist.deleteHistory(did, sk2, urls)
 
-    assert result[url1]["http_status"] == 200
-    assert result[url1]["data"]["deleted"]["history"] == history
-    assert result[url2]["http_status"] == 200
-    assert result[url2]["data"]["deleted"]["history"] == history
+    assert result[url1+"/"+did].status == 200
+    assert result[url1+"/"+did].response.body == history
+    assert result[url2+"/"+did].status == 200
+    assert result[url2+"/"+did].response.body == history
 
 
 def testDeleteHistoryNoUrls():

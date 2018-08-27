@@ -1,21 +1,23 @@
 import libnacl
 
 from pydidery.lib import generating as gen
+from pydidery.lib import didering
+from pydidery.help import signing as sign
 
 
 def testDidGen():
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
     vk, sk = libnacl.crypto_sign_seed_keypair(seed)
 
-    did = gen.didGen(vk)
+    did = didering.didGen(vk)
 
     assert did == "did:dad:{}".format(gen.keyToKey64u(vk))
 
 
 def testDidGen64():
-    vk, sk = gen.keyGen()
+    vk, sk, did = gen.keyGen()
 
-    did = gen.didGen64(vk)
+    did = didering.didGen64(vk)
 
     assert did == "did:dad:{}".format(vk)
 
@@ -39,7 +41,7 @@ def testKey64uToKey():
 
 
 def testKeyGen():
-    vk, sk = gen.keyGen()
+    vk, sk, did = gen.keyGen()
 
     assert vk
     assert sk
@@ -48,7 +50,7 @@ def testKeyGen():
 def testKeyGenWithSeed():
     seed = b'\x8dh\xf3\xa0!\xd1\xcd\xc0b\x8c^\x1d\xbcg>\xe1S\x12\xc7\xcb\xbc\x0eTOz@\xdb} \xba\x06\x04'
 
-    vk, sk = gen.keyGen(seed)
+    vk, sk, did = gen.keyGen(seed)
 
     exp_vk = "u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc="
     exp_sk = "jWjzoCHRzcBijF4dvGc-4VMSx8u8DlRPekDbfSC6BgS7xNYgTbzIB276Uas8cfZknvcbGgwFnH4Pdx_pEwRpNw=="
@@ -62,7 +64,7 @@ def testSignResource():
     sk = b'\x8dh\xf3\xa0!\xd1\xcd\xc0b\x8c^\x1d\xbcg>\xe1S\x12\xc7\xcb\xbc\x0eTOz@\xdb} \xba\x06\x04\xbb\xc4\xd6 M\xbc\xc8\x07n\xfaQ\xab<q\xf6d\x9e\xf7\x1b\x1a\x0c\x05\x9c~\x0fw\x1f\xe9\x13\x04i7'
     resource = b'{"data":"TEST!"}'
 
-    signature = gen.signResource(resource, sk)
+    signature = sign.signResource(resource, sk)
 
     exp_signature = "dcYLAFhB6A2kU9XwvEcuV0HUDrFVgiraFEtOMsnP8FfOPebFhMbwIClY6PGdKX6CYJvc-9TwCIeca91dcof1Ag=="
 

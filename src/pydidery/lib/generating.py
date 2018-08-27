@@ -1,41 +1,12 @@
 import base64
 import libnacl
 
+import pydidery.lib.didering as didering
+
 """
 This module provides various key generation and manipulation functions for use with the didery server.  
 Keys are generated using the python libnacl library.
 """
-
-
-def didGen(vk, method="dad"):
-    """
-    didGen accepts an EdDSA (Ed25519) key in the form of a byte string and returns a DID.
-
-    :param vk: 32 byte verifier/public key from EdDSA (Ed25519) key
-    :param method: W3C did method string. Defaults to "dad".
-    :return: W3C DID string
-    """
-    if vk is None:
-        return None
-
-    # convert verkey to jsonable unicode string of base64 url-file safe
-    vk64u = keyToKey64u(vk)
-
-    return "did:{0}:{1}".format(method, vk64u)
-
-
-def didGen64(vk64u, method="dad"):
-    """
-    didGen accepts a url-file safe base64 key in the form of a string and returns a DID.
-
-    :param vk64u: base64 url-file safe verifier/public key from EdDSA (Ed25519) key
-    :param method: W3C did method string. Defaults to "dad".
-    :return: W3C DID string
-    """
-    if vk64u is None:
-        return None
-
-    return "did:{0}:{1}".format(method, vk64u)
 
 
 def keyToKey64u(key):
@@ -78,25 +49,9 @@ def keyGen(seed=None):
 
     vk, sk = libnacl.crypto_sign_seed_keypair(seed)
 
-    return keyToKey64u(vk), keyToKey64u(sk)
+    did = didering.didGen(vk)
 
-
-def signResource(resource, sKey):
-    """
-    signResource accepts a byte string and an EdDSA (Ed25519) key in the form of a byte string
-    and returns a base64 url-file safe signature.
-
-    :param resource: byte string to be signed
-    :param sKey: signing/private key from EdDSA (Ed25519) key
-    :return: url-file safe base64 signature string
-    """
-    if resource is None:
-        return None
-
-    sig = libnacl.crypto_sign(resource, sKey)
-    sig = sig[:libnacl.crypto_sign_BYTES]
-
-    return keyToKey64u(sig)
+    return keyToKey64u(vk), keyToKey64u(sk), did
 
 
 def historyGen(seed=None):
@@ -112,11 +67,11 @@ def historyGen(seed=None):
              url-file safe base64 pre-rotated verifier/public key,
              url-file safe base64 pre-rotated signing/private key
     """
-    vk, sk = keyGen(seed)
-    pre_rotated_vk, pre_rotated_sk = keyGen(seed)
+    vk, sk, did = keyGen(seed)
+    pre_rotated_vk, pre_rotated_sk, did = keyGen(seed)
 
     history = {
-        "id": didGen64(vk),
+        "id": didering.didGen64(vk),
         "signer": 0,
         "signers": [
             vk,

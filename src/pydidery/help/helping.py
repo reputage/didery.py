@@ -1,5 +1,3 @@
-import libnacl
-
 from ..diderying import ValidationError
 
 from collections import OrderedDict as ODict
@@ -15,62 +13,11 @@ from ioflo.base import Store
 from ioflo.aid import timing
 from ioflo.aid import getConsole
 
-from ..lib import generating as gen
+
+from ..models.responding import responseFactory
+from ..lib.didering import validateDid
 
 console = getConsole()
-
-
-def genKeys():
-    seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
-    vk, sk = libnacl.crypto_sign_seed_keypair(seed)
-    did = gen.didGen(vk)
-
-    return gen.keyToKey64u(vk), gen.keyToKey64u(sk), did
-
-
-def validateDid(did, method="dad"):
-    """
-    Parses and returns did index keystr from signer key indexed did
-    as tuple (did, index, keystr)
-    raises ValueError if fails parsing
-    """
-    try:  # correct did format  pre:method:keystr
-        pre, meth, keystr = did.split(":")
-    except ValueError as ex:
-        raise ValueError("Malformed DID value")
-
-    if pre != "did" or meth != method:
-        raise ValueError("Invalid DID value")
-
-    return did, keystr
-
-
-def verify(sig, msg, vk):
-    """
-    Returns True if signature sig of message msg is verified with
-    verification key vk Otherwise False
-    All of sig, msg, vk are bytes
-    """
-    try:
-        result = libnacl.crypto_sign_open(sig + msg, vk)
-    except Exception as ex:
-        return False
-    return True if result else False
-
-
-def verify64u(signature, message, verkey):
-    """
-    Returns True if signature is valid for message with respect to verification
-    key verkey
-
-    signature and verkey are encoded as unicode base64 url-file strings
-    and message is unicode string as would be the case for a json object
-
-    """
-    sig = gen.key64uToKey(signature)
-    vk = gen.key64uToKey(verkey)
-
-    return verify(sig, message, vk)
 
 
 def parseJsonFile(file, requireds=()):
@@ -235,16 +182,16 @@ def awaitAsync(generators):
 
     while True:
         remove = []
-        for i, generator in generators.items():
+        for url, generator in generators.items():
             try:
                 next(generator)
             except StopIteration as si:
                 if si.value:
-                    values[i] = {"data": json.loads(si.value[0]), "http_status": si.value[1]}
+                    values[url] = responseFactory(url, si.value[1], json.loads(si.value[0]))
                 else:
-                    values[i] = {"data": {"error": "request timeout"}, "http_status": 0}
+                    values[url] = responseFactory(url, 0, None)
 
-                remove.append(i)
+                remove.append(url)
 
         for val in remove:
             generators.pop(val)

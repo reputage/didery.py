@@ -7,6 +7,7 @@ except ImportError:
 
 from ..help import helping as h
 from ..help import consensing
+from ..help import signing as sign
 from ..lib import generating as gen
 
 
@@ -35,15 +36,16 @@ def getOtpBlob(did, urls):
     if not urls:
         raise ValueError("At least one url required.")
 
+    consense = consensing.Consense()
     generators = {}
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "blob", did)
-        generators[url] = __patronHelper(path=endpoint)
+        generators[endpoint] = __patronHelper(path=endpoint)
 
     data = h.awaitAsync(generators)
 
-    return consensing.consense(data, "otp")
+    return consense.consense(data)
 
 
 def postOtpBlob(data, sk, urls):
@@ -57,12 +59,12 @@ def postOtpBlob(data, sk, urls):
     data['changed'] = str(arrow.utcnow())
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
-        "Signature": 'signer="{0}"'.format(gen.signResource(bdata, gen.key64uToKey(sk)))
+        "Signature": 'signer="{0}"'.format(sign.signResource(bdata, gen.key64uToKey(sk)))
     }
 
     for url in urls:
         endpoint = "{0}/{1}".format(url, "blob")
-        generators[url] = __patronHelper(method="POST", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="POST", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -79,12 +81,12 @@ def putOtpBlob(data, sk, urls):
     did = data["id"]
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
-        "Signature": 'signer="{0}"'.format(gen.signResource(bdata, gen.key64uToKey(sk)))
+        "Signature": 'signer="{0}"'.format(sign.signResource(bdata, gen.key64uToKey(sk)))
     }
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "blob", did)
-        generators[url] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="PUT", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)
 
@@ -101,12 +103,12 @@ def removeOtpBlob(did, sk, urls):
     bdata = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode()
     headers = {
         "Signature": 'signer="{0}"'.format(
-            gen.signResource(bdata, gen.key64uToKey(sk))
+            sign.signResource(bdata, gen.key64uToKey(sk))
         )
     }
 
     for url in urls:
         endpoint = "{0}/{1}/{2}".format(url, "blob", did)
-        generators[url] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
+        generators[endpoint] = __patronHelper(method="DELETE", path=endpoint, data=data, headers=headers)
 
     return h.awaitAsync(generators)

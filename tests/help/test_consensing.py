@@ -8,6 +8,7 @@ from pydidery.help import signing
 from pydidery.lib import generating as gen
 from pydidery.models import responding as resp
 from pydidery.models import consensing as consenseModel
+from ..data import history_data_builder as builder
 
 
 HISTORY = 0
@@ -50,41 +51,26 @@ def testvalidateSignatures():
     datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
     bad_sig = signing.signResource(bHistory2, gen.key64uToKey(datum1[SK1]))
 
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withInvalidSignerSignature()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
+
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": bad_sig
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build()
     }
 
     consense.validateData(data)
 
+    history2 = response2.history
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }
+        history2.signerSig: builder.SignedHistoryBuilder().build()
     }
     assert consense.valid_sig_counts == {
-        datum1_sig: 1
+        history2.signerSig: 1
     }
 
     # Test empty data
@@ -96,29 +82,17 @@ def testvalidateSignatures():
 
     # Test that majority of valid data passes
     consense = consensing.Consense()
-    data["http://localhost:8081/history"] = resp.responseFactory(
-        "http://localhost:8081/history",
-        200,
-        {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }
-    )
-
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    ).withPort(8081)
+    data["http://localhost:8081/history"] = response3.build()
     consense.validateData(data)
 
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }
+        history2.signerSig: builder.SignedHistoryBuilder().build()
     }
-    assert datum1_sig in consense.valid_sig_counts
-    assert consense.valid_sig_counts[datum1_sig] == 2
+    assert history2.signerSig in consense.valid_sig_counts
+    assert consense.valid_sig_counts[history2.signerSig] == 2
 
     # Test multiple signatures
     consense = consensing.Consense()

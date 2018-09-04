@@ -11,8 +11,10 @@ house main
 		    bid start update
 		    bid start retrieve
 		    bid start download
+		    bid start delete
+		    bid start remove
 		    bid start events
-		    go next if .main.incept.complete == True and .main.upload.complete == True and .main.rotate.complete == True and .main.update.complete == True and .main.retrieve.complete == True and .main.download.complete == True and .main.events.complete == True
+		    go next if .main.incept.complete == True and .main.upload.complete == True and .main.rotate.complete == True and .main.update.complete == True and .main.retrieve.complete == True and .main.download.complete == True and .main.delete.complete == True and .main.remove.complete == True and .main.events.complete == True
 
 		frame stopper
 		    bid stop all
@@ -47,7 +49,17 @@ house main
 	        print starting download
 	        do download at enter
 
-	framer events be inactive via .main.events
+	framer delete be inactive via .main.delete
+	    frame delete
+            print starting delete
+            do delete at enter
+
+    framer remove be inactive via .main.remove
+	    frame remove
+            print starting remove
+            do remove at enter
+
+    framer events be inactive via .main.events
 	    frame events
             print starting retrieval
             do events at enter

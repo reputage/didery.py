@@ -3,15 +3,26 @@ try:
 except ImportError:
     import json
 
+from collections import OrderedDict as ODict
+
 from ..lib.didering import validateDid
 from ..help.signing import verify64u
 
 
 def responseFactory(url, status, data):
-    if "history" in url:
+    if "history" in data or ("deleted" in data and "history" in data["deleted"]):
         response = HistoryData(data)
-    elif "blob" in url:
+    elif "otp_data" in data or ("deleted" in data and "otp_data" in data["deleted"]):
         response = OtpData(data)
+    elif status == 200 and "event" in data[0]:
+        response = {}
+        for datum in data:
+            key = str(datum["event"]["signer"])
+            event = {
+                "history": datum["event"],
+                "signatures": datum["signatures"]
+            }
+            response[key] = HistoryData(event)
     else:
         response = DideryData(data)
 
@@ -23,6 +34,12 @@ class DideryResponse:
         self.url = url
         self.status = status
         self.response = response
+
+    def __str__(self):
+        return str(ODict(self.__dict__)).replace("OrderedDict", "")
+
+    def __repr__(self):
+        return str(ODict(self.__dict__)).replace("OrderedDict", "DideryResponse")
 
 
 class DideryData:
@@ -65,6 +82,9 @@ class DideryData:
     def valid(self):
         return verify64u(self.signature, self.bbody, self.vk)
 
+    def __eq__(self, other):
+        return self.data == other.data
+
 
 class HistoryData(DideryData):
     """
@@ -92,6 +112,12 @@ class HistoryData(DideryData):
             return self._data["signatures"]["rotation"]
         else:
             return self._data["signatures"]["signer"]
+
+    def __str__(self):
+        return str(ODict(self.body)).replace("OrderedDict", "")
+
+    def __repr__(self):
+        return str(ODict(self.body)).replace("OrderedDict", "HistoryData")
 
 
 class OtpData(DideryData):

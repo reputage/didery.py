@@ -1,6 +1,6 @@
 class ConsensusResult:
     TIMEOUT = 0
-    SUCCESS = 1
+    VALID = 1
     ERROR = 2
     FAILED = 3
 
@@ -16,7 +16,7 @@ class ConsensusResult:
     def __str__(self):
         if self.req_status == ConsensusResult.TIMEOUT:
             return "Request Timed Out"
-        elif self.req_status == ConsensusResult.SUCCESS:
+        elif self.req_status == ConsensusResult.VALID:
             return "Signature Validation Succeeded"
         elif self.req_status == ConsensusResult.ERROR:
             return "Error Handling Request. HTTP_{}".format(self.http_status)

@@ -30,8 +30,7 @@ Example
     import pydidery.lib.generating as gen
 
     # generate a did for the data
-    vk, sk = gen.keyGen()
-    did = gen.didGen64(vk)
+    vk, sk, did = gen.keyGen()
 
     data = {
         "id": did,
@@ -100,8 +99,7 @@ Example
     import pydidery.lib.generating as gen
 
     # make sure there is already data on the server for our did 
-    vk, sk = gen.keyGen()
-    did = gen.didGen64(vk)
+    vk, sk, did = gen.keyGen()
 
     data = {
         "id": did,
@@ -180,8 +178,7 @@ Example
     import pydidery.lib.generating as gen
 
     # generate a did for the data
-    vk, sk = gen.keyGen()
-    did = gen.didGen64(vk)
+    vk, sk, did = gen.keyGen()
 
     data = {
         "id": did,
@@ -243,8 +240,7 @@ Example
     import pydidery.lib.generating as gen
 
     # generate a did for the data
-    vk, sk = gen.keyGen()
-    did = gen.didGen64(vk)
+    vk, sk, did = gen.keyGen()
 
     data = {
         "id": did,

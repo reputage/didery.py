@@ -175,14 +175,16 @@ Example
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
 
     # generate key pair with custom seed
-    vk, sk = gen.keyGen(seed)
+    vk, sk, did = gen.keyGen(seed)
     print(vk)
     print(sk)
+    print(did)
 
     # generate key pair with built in seed
-    vk, sk = gen.keyGen()
+    vk, sk, did = gen.keyGen()
     print(vk)
     print(sk)
+    print(did)
 
 Output
 ^^^^^^
@@ -191,9 +193,11 @@ Output
 
     0RvCaAvHInLezCP97jaHoPokAGfP5LTpwAvcR4YqNxQ=
     qNrFUd0pqLbTLIIo_xXpQFuKrqFJe45GO_dMt_OqPITRG8JoC8cict7MI_3uNoeg-iQAZ8_ktOnAC9xHhio3FA==
+    did:dad:0RvCaAvHInLezCP97jaHoPokAGfP5LTpwAvcR4YqNxQ=
 
     0hZpSyBosXHj52TkceVdJoPGmGt26D5ErAEO0I5m-bg=
     qNjuiN_MijfK8eIvJJ4mf7IRMh7noEK92KAUNXzNPPXSFmlLIGixcePnZORx5V0mg8aYa3boPkSsAQ7Qjmb5uA==
+    did:dad:0hZpSyBosXHj52TkceVdJoPGmGt26D5ErAEO0I5m-bg=
 
 generating.signResource(resource, sKey)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -214,7 +218,7 @@ Example
     import pydidery.lib.generating as gen
 
     # generate key pair with custom seed
-    vk, sk = gen.keyGen()
+    vk, sk, did = gen.keyGen()
     resource = b'{"data":"Test!"}'
 
     signature = gen.signResource(resource, sk)

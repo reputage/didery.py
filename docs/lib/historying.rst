@@ -108,7 +108,7 @@ Example
     hist.postHistory(history, sk, urls)
 
     # generate the new pre rotated key
-    new_pvk, new_psk = gen.keyGen()
+    new_pvk, new_psk, unneeded = gen.keyGen()
 
     # add public key to history
     history["signers"].append(new_pvk)

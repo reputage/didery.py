@@ -11,4 +11,5 @@ Python library for generating keys and broadcasting or polling didery servers.
    getting_started
    generating
    historying
+   history_eventing
    otping

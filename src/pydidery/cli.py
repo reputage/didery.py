@@ -98,6 +98,14 @@ Command line interface for didery.py library.  Path to config file containing se
     help="Remove otp encrypted private key."
 )
 @click.option(
+    '--events',
+    '-e',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help="Pull a record of all history rotation events for a specified did."
+)
+@click.option(
     '-v',
     multiple=False,
     count=True,
@@ -118,7 +126,7 @@ Command line interface for didery.py library.  Path to config file containing se
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, data, did, config):
+def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, data, did, config):
     verbose = v if v <= 4 else 4
     preloads = [
         ('.main.incept.verbosity', odict(value=verbose)),
@@ -129,6 +137,7 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, 
         ('.main.download.verbosity', odict(value=verbose)),
         ('.main.delete.verbosity', odict(value=verbose)),
         ('.main.remove.verbosity', odict(value=verbose)),
+        ('.main.events.verbosity', odict(value=verbose)),
         ('.main.incept.start', odict(value=True if incept else False)),
         ('.main.upload.start', odict(value=True if upload else False)),
         ('.main.rotate.start', odict(value=True if rotate else False)),
@@ -136,13 +145,14 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, 
         ('.main.retrieve.start', odict(value=True if retrieve else False)),
         ('.main.download.start', odict(value=True if download else False)),
         ('.main.delete.start', odict(value=True if delete else False)),
-        ('.main.remove.start', odict(value=True if remove else False))
+        ('.main.remove.start', odict(value=True if remove else False)),
+        ('.main.events.start', odict(value=True if events else False))
     ]
 
-    options = [incept, upload, rotate, update, retrieve, download, delete, remove]
+    options = [incept, upload, rotate, update, retrieve, download, delete, remove, events]
     count = options.count(True)
     if count > 1:
-        click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, or --download")
+        click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, --download, delete, remove, or events.")
         return
     if count == 0:
         click.echo("No options given. For help use --help. Exiting Didery.py")
@@ -178,6 +188,9 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, v, 
 
         if remove:
             preloads.extend(removeSetup(configData, did))
+
+        if events:
+            preloads.extend(eventsSetup(configData, did))
 
     except (ValidationError, ValueError) as ex:
         click.echo("Error setting up didery.py: {}.".format(ex))
@@ -348,6 +361,20 @@ def removeSetup(config, did):
     return preloads
 
 
+def eventsSetup(config, did):
+    if did is None:
+        raise ValueError("did required. Use --did")
+
+    h.validateDid(did)
+
+    preloads = [
+        ('.main.events.servers', odict(value=config["servers"])),
+        ('.main.events.did', odict(value=did))
+    ]
+
+    return preloads
+
+
 def historyInit():
     history, vk, sk, pvk, psk = gen.historyGen()
 
@@ -373,7 +400,7 @@ def historyInit():
 
 
 def keyery():
-    sk, vk = gen.keyGen()
+    sk, vk, did = gen.keyGen()
 
     with open('didery.keys.json', 'w') as keyFile:
         keys = {

@@ -11,7 +11,8 @@ house main
 		    bid start update
 		    bid start retrieve
 		    bid start download
-		    go next if .main.incept.complete == True and .main.upload.complete == True and .main.rotate.complete == True and .main.update.complete == True and .main.retrieve.complete == True and .main.download.complete == True
+		    bid start events
+		    go next if .main.incept.complete == True and .main.upload.complete == True and .main.rotate.complete == True and .main.update.complete == True and .main.retrieve.complete == True and .main.download.complete == True and .main.events.complete == True
 
 		frame stopper
 		    bid stop all
@@ -45,3 +46,8 @@ house main
 	    frame download
 	        print starting download
 	        do download at enter
+
+	framer events be inactive via .main.events
+	    frame events
+            print starting retrieval
+            do events at enter

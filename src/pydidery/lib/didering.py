@@ -34,9 +34,13 @@ def didGen64(vk64u, method="dad"):
 
 def validateDid(did, method="dad"):
     """
-    Parses and returns did index keystr from signer key indexed did
-    as tuple (did, index, keystr)
+    Parses and returns did and key string
+    as a tuple (did, keystr)
     raises ValueError if fails parsing
+
+    :param did: W3C DID string
+    :param method: W3C did method string. Defaults to "dad".
+    :return: (string, string) W3C DID string, key string
     """
     try:  # correct did format  pre:method:keystr
         pre, meth, keystr = did.split(":")

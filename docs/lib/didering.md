@@ -77,20 +77,21 @@ validateDid accepts a [W3C DID](https://w3c-ccg.github.io/did-spec/) string and 
 import pydidery.lib.didering as did
 
 
-vk = "nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
+did1 = "did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
+did2 = "did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
 
 # use the default method
-did1 = did.didGen64(vk)
+result1 = did.validateDid(did1)
 
 # or you can specify a method like igo
-did2 = did.didGen64(vk, "igo")
+result2 = did.validateDid(did2, "igo")
 
-print(did1)
-print(did2)
+print(result1)
+print(result2)
 ```
 
 #### Output
 ```
-did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
-did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
+('did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=', 'nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=')
+('did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=', 'nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=')
 ```

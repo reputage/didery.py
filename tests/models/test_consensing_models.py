@@ -80,7 +80,7 @@ def testConsenseResults():
     }
 
     for url, status in exp_results.items():
-        assert results[url].req_status == status
+        assert results[url].validation_status == status
 
     # Test failed signature validation
     consense = consensing.Consense()
@@ -104,7 +104,7 @@ def testConsenseResults():
     exp_results["http://localhost:8000/history"] = consenseModel.ConsensusResult.FAILED
 
     for url, status in exp_results.items():
-        assert results[url].req_status == status
+        assert results[url].validation_status == status
 
     # Test failed request
     consense = consensing.Consense()
@@ -128,4 +128,4 @@ def testConsenseResults():
     exp_results["http://localhost:8000/history"] = consenseModel.ConsensusResult.ERROR
 
     for url, status in exp_results.items():
-        assert results[url].req_status == status
+        assert results[url].validation_status == status

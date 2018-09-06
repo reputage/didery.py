@@ -1,3 +1,8 @@
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from ioflo.aid import getConsole
 from ioflo.aid import odict
 from ioflo.base import doify
@@ -160,11 +165,11 @@ def retrieval(self):
     if data:
         console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["history"], data["signatures"]))
         for url, result in results.items():
-            console.verbose("{}:\t{}\n".format(url, result))
+            console.verbose("{}\n".format(url, result))
     else:
         console.terse("Consensus Failed.\n")
         for url, result in results.items():
-            console.concise("{}:\t{}\n".format(url, result))
+            console.concise("{}\n".format(result))
 
     self.complete.value = True
 
@@ -191,13 +196,15 @@ def download(self):
     data, results = otp.getOtpBlob(self.did.value, self.servers.value)
 
     if data:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["otp_data"], data["signatures"]))
+        formatted_data = json.dumps(data["otp_data"], indent=4)
+        formatted_sigs = json.dumps(data["signatures"], indent=4)
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(formatted_data, formatted_sigs))
         for url, result in results.items():
-            console.verbose("{}:\t{}\n".format(url, result))
+            console.verbose("{}\n".format(result))
     else:
         console.terse("Consensus Failed.\n")
         for url, result in results.items():
-            console.concise("{}:\t{}\n".format(url, result))
+            console.concise("{}\n".format(result))
 
     self.complete.value = True
 
@@ -278,16 +285,12 @@ def events(self):
     data, results = event.getHistoryEvents(self.did.value, self.servers.value)
 
     if data:
-        print()
-        print("________________TEST___________________")
-        print(data)
-        print()
         console.terse("Result: \nData:\t{}\n".format(data["events"]))
         for url, result in results.items():
-            console.verbose("{}:\t{}\n".format(url, result))
+            console.verbose("{}\n".format(result))
     else:
         console.terse("Consensus Failed.\n")
         for url, result in results.items():
-            console.concise("{}:\t{}\n".format(url, result))
+            console.concise("{}\n".format(result))
 
     self.complete.value = True

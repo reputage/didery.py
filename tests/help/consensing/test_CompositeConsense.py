@@ -35,7 +35,8 @@ def testValidateDataInvalidSigsIncompleteMajority():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
     bad_sig = signing.signResource(bHistory_inception, gen.key64uToKey(bad_sk))
 
     data = {
@@ -48,8 +49,8 @@ def testValidateDataInvalidSigsIncompleteMajority():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -72,7 +73,7 @@ def testValidateDataInvalidSigsIncompleteMajority():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
+                                "signer": rotation1_sign_sig,
                                 "rotation": bad_sig
                             }
                         }
@@ -97,8 +98,8 @@ def testValidateDataInvalidSigsIncompleteMajority():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -118,8 +119,8 @@ def testValidateDataInvalidSigsIncompleteMajority():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {
@@ -158,7 +159,8 @@ def testValidateDataMajorityPasses():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
     bad_sig = signing.signResource(bHistory_inception, gen.key64uToKey(bad_sk))
 
     data = {
@@ -171,8 +173,8 @@ def testValidateDataMajorityPasses():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -195,7 +197,7 @@ def testValidateDataMajorityPasses():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
+                                "signer": rotation1_sign_sig,
                                 "rotation": bad_sig
                             }
                         }
@@ -219,8 +221,8 @@ def testValidateDataMajorityPasses():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -244,8 +246,8 @@ def testValidateDataMajorityPasses():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -265,8 +267,8 @@ def testValidateDataMajorityPasses():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {
@@ -296,7 +298,8 @@ def testValidateDataValidSigsConflictingData():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
 
     bad_history_inception = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
     bad_ppvk, bad_ppsk, bad_ppdid = gen.keyGen()
@@ -307,7 +310,8 @@ def testValidateDataValidSigsConflictingData():
     bad_bHistory_inception = json.dumps(bad_history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bad_bHistory_rotation = json.dumps(bad_history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bad_inception_sig = signing.signResource(bad_bHistory_inception, gen.key64uToKey(bad_history_inception[SK1]))
-    bad_rotation1_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK2]))
+    bad_rotation1_sign_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK1]))
+    bad_rotation1_rot_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK2]))
 
     data = {
         url8000:
@@ -319,8 +323,8 @@ def testValidateDataValidSigsConflictingData():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -343,8 +347,8 @@ def testValidateDataValidSigsConflictingData():
                         {
                             "history": bad_history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": bad_inception_sig,
-                                "rotation": bad_rotation1_sig
+                                "signer": bad_rotation1_sign_sig,
+                                "rotation": bad_rotation1_rot_sig
                             }
                         }
                     ),
@@ -367,8 +371,8 @@ def testValidateDataValidSigsConflictingData():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -392,8 +396,8 @@ def testValidateDataValidSigsConflictingData():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -411,8 +415,8 @@ def testValidateDataValidSigsConflictingData():
             {
                 "history": bad_history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": bad_inception_sig,
-                    "rotation": bad_rotation1_sig
+                    "signer": bad_rotation1_sign_sig,
+                    "rotation": bad_rotation1_rot_sig
                 }
             }
         ),
@@ -433,8 +437,8 @@ def testValidateDataValidSigsConflictingData():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {
@@ -448,8 +452,8 @@ def testValidateDataValidSigsConflictingData():
             '1': {
                 "history": bad_history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": bad_inception_sig,
-                    "rotation": bad_rotation1_sig
+                    "signer": bad_rotation1_sign_sig,
+                    "rotation": bad_rotation1_rot_sig
                 }
             },
             '0': {
@@ -482,7 +486,8 @@ def testValidateDataIncompleteMajority():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
 
     bad_history_inception = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
     bad_ppvk, bad_ppsk, bad_ppdid = gen.keyGen()
@@ -495,7 +500,8 @@ def testValidateDataIncompleteMajority():
     bad_bHistory_rotation = json.dumps(bad_history_rotation1[HISTORY], ensure_ascii=False,
                                        separators=(',', ':')).encode()
     bad_inception_sig = signing.signResource(bad_bHistory_inception, gen.key64uToKey(bad_history_inception[SK1]))
-    bad_rotation1_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK2]))
+    bad_rotation1_sign_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK1]))
+    bad_rotation1_rot_sig = signing.signResource(bad_bHistory_rotation, gen.key64uToKey(bad_history_inception[SK2]))
 
     data = {
         url8000:
@@ -507,8 +513,8 @@ def testValidateDataIncompleteMajority():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -531,8 +537,8 @@ def testValidateDataIncompleteMajority():
                         {
                             "history": bad_history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": bad_inception_sig,
-                                "rotation": bad_rotation1_sig
+                                "signer": bad_rotation1_sign_sig,
+                                "rotation": bad_rotation1_rot_sig
                             }
                         }
                     ),
@@ -555,8 +561,8 @@ def testValidateDataIncompleteMajority():
                         {
                             "history": bad_history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": bad_inception_sig,
-                                "rotation": bad_rotation1_sig
+                                "signer": bad_rotation1_sign_sig,
+                                "rotation": bad_rotation1_rot_sig
                             }
                         }
                     ),
@@ -579,8 +585,8 @@ def testValidateDataIncompleteMajority():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -604,8 +610,8 @@ def testValidateDataIncompleteMajority():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -623,8 +629,8 @@ def testValidateDataIncompleteMajority():
             {
                 "history": bad_history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": bad_inception_sig,
-                    "rotation": bad_rotation1_sig
+                    "signer": bad_rotation1_sign_sig,
+                    "rotation": bad_rotation1_rot_sig
                 }
             }
         ),
@@ -645,8 +651,8 @@ def testValidateDataIncompleteMajority():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {
@@ -660,8 +666,8 @@ def testValidateDataIncompleteMajority():
             '1': {
                 "history": bad_history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": bad_inception_sig,
-                    "rotation": bad_rotation1_sig
+                    "signer": bad_rotation1_sign_sig,
+                    "rotation": bad_rotation1_rot_sig
                 }
             },
             '0': {
@@ -692,7 +698,8 @@ def testValidateDataWithHTTPError():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
 
     data = {
         url8000:
@@ -704,8 +711,8 @@ def testValidateDataWithHTTPError():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -735,8 +742,8 @@ def testValidateDataWithHTTPError():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -756,8 +763,8 @@ def testValidateDataWithHTTPError():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {
@@ -787,7 +794,8 @@ def testValidateDataWithTimeOut():
     bHistory_inception = json.dumps(history_inception[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     bHistory_rotation = json.dumps(history_rotation1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
     inception_sig = signing.signResource(bHistory_inception, gen.key64uToKey(history_inception[SK1]))
-    rotation1_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
+    rotation1_sign_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK1]))
+    rotation1_rot_sig = signing.signResource(bHistory_rotation, gen.key64uToKey(history_inception[SK2]))
 
     data = {
         url8000:
@@ -799,8 +807,8 @@ def testValidateDataWithTimeOut():
                         {
                             "history": history_rotation1[HISTORY],
                             "signatures": {
-                                "signer": inception_sig,
-                                "rotation": rotation1_sig
+                                "signer": rotation1_sign_sig,
+                                "rotation": rotation1_rot_sig
                             }
                         }
                     ),
@@ -830,8 +838,8 @@ def testValidateDataWithTimeOut():
             {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             }
         ),
@@ -851,8 +859,8 @@ def testValidateDataWithTimeOut():
             '1': {
                 "history": history_rotation1[HISTORY],
                 "signatures": {
-                    "signer": inception_sig,
-                    "rotation": rotation1_sig
+                    "signer": rotation1_sign_sig,
+                    "rotation": rotation1_rot_sig
                 }
             },
             '0': {

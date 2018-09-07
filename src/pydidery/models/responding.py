@@ -107,11 +107,41 @@ class HistoryData(DideryData):
         return self.body["signers"][signer]
 
     @property
-    def signature(self):
+    def previous_vk(self):
+        signer = int(self.body["signer"])
+        if signer == 0:
+            return None
+
+        return self.body["signers"][signer-1]
+
+    @property
+    def signer_sig(self):
+        return self._data["signatures"]["signer"]
+
+    @property
+    def rotation_sig(self):
         if "rotation" in self._data["signatures"]:
             return self._data["signatures"]["rotation"]
         else:
-            return self._data["signatures"]["signer"]
+            return None
+
+    @property
+    def signature(self):
+        if self.rotation_sig:
+            return self.rotation_sig
+        else:
+            return self.signer_sig
+
+    @property
+    def valid(self):
+        if self.rotation_sig:
+            rotation = verify64u(self.rotation_sig, self.bbody, self.vk)
+            signer = verify64u(self.signer_sig, self.bbody, self.previous_vk)
+        else:
+            rotation = True
+            signer = verify64u(self.signer_sig, self.bbody, self.vk)
+
+        return signer and rotation
 
     def __str__(self):
         return str(ODict(self.body)).replace("OrderedDict", "")

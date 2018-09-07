@@ -8,4 +8,5 @@ Python library for generating keys and broadcasting or polling didery servers.
    :glob:
    :titlesonly:
 
-    consensing
+   consensing
+   responding

@@ -231,8 +231,7 @@ def testValidateDataValidSigsConflictingData():
             {
                 "history": datum1[HISTORY],
                 "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": datum1_sig
+                    "signer": datum1_sig
                 }
             }
         )
@@ -244,8 +243,7 @@ def testValidateDataValidSigsConflictingData():
         datum1_sig: {
             "history": datum1[HISTORY],
             "signatures": {
-                "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": datum1_sig
+                "signer": datum1_sig
             }
         },
         datum2_sig: {
@@ -298,8 +296,7 @@ def testValidateDataIncompleteMajority():
             {
                 "history": datum1[HISTORY],
                 "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": datum1_sig
+                    "signer": datum1_sig
                 }
             }
         ),
@@ -321,8 +318,7 @@ def testValidateDataIncompleteMajority():
         datum1_sig: {
             "history": datum1[HISTORY],
             "signatures": {
-                "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": datum1_sig
+                "signer": datum1_sig
             }
         },
         datum2_sig: {

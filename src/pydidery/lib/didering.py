@@ -46,8 +46,8 @@ def extractDidParts(did):
     except ValueError as ex:
         raise ValueError("Malformed DID value")
 
-    if pre != "did":
-        raise ValueError("Invalid DID value")
+    if not pre or not meth or not keystr:  # check for empty values
+        raise ValueError("Malformed DID value")
 
     return pre, meth, keystr
 
@@ -65,6 +65,9 @@ def validateDid(did, method="dad"):
     try:  # correct did format  pre:method:keystr
         pre, meth, keystr = did.split(":")
     except ValueError as ex:
+        raise ValueError("Malformed DID value")
+
+    if not pre or not meth or not keystr:  # check for empty values
         raise ValueError("Malformed DID value")
 
     if pre != "did" or meth != method:

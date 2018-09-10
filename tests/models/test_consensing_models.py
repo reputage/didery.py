@@ -17,7 +17,6 @@ VK2 = 3
 SK2 = 4
 
 
-
 def testConsenseResults():
     consense = consensing.Consense()
     datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)

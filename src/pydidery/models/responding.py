@@ -26,7 +26,7 @@ def responseFactory(url, status, data):
         response = HistoryData(data)
     elif "otp_data" in data or ("deleted" in data and "otp_data" in data["deleted"]):
         response = OtpData(data)
-    elif status == 200 and "event" in data[0]:
+    elif status == 200 and data and "event" in data[0]:
         response = {}
         for datum in data:
             key = str(datum["event"]["signer"])

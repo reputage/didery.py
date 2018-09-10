@@ -32,6 +32,26 @@ def didGen64(vk64u, method="dad"):
     return "did:{0}:{1}".format(method, vk64u)
 
 
+def extractDidParts(did):
+    """
+    Parses and returns a tuple containing the prefix method and key string contained in the supplied did string.
+    If the supplied string does not fit the pattern pre:method:keystr a ValueError is raised.
+
+    :param did: W3C DID string
+
+    :return: (pre, method, key string) a tuple containing the did parts.
+    """
+    try:  # correct did format  pre:method:keystr
+        pre, meth, keystr = did.split(":")
+    except ValueError as ex:
+        raise ValueError("Malformed DID value")
+
+    if pre != "did":
+        raise ValueError("Invalid DID value")
+
+    return pre, meth, keystr
+
+
 def validateDid(did, method="dad"):
     """
     Parses and returns did and key string

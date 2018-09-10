@@ -87,6 +87,47 @@ Output
     did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
     did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
 
+didering.extractDidParts(did):
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+extractDidParts parses and returns a tuple containing the prefix method
+and key string contained in the supplied `W3C
+DID <https://w3c-ccg.github.io/did-spec/>`__ string. If the supplied
+string does not fit the pattern pre:method:keystr a ValueError is
+raised.
+
+**did** (*required*)- `W3C DID <https://w3c-ccg.github.io/did-spec/>`__
+string
+
+**returns** - (pre, method, key string) a tuple containing the did
+parts.
+
+Example
+^^^^^^^
+
+.. code:: python
+
+    import pydidery.lib.didering as did
+
+
+    did1 = "did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
+    did2 = "did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
+
+
+    result1 = did.extractDidParts(did1)
+    result2 = did.extractDidParts(did2)
+
+    print(result1)
+    print(result2)
+
+Output
+^^^^^^
+
+::
+
+    ('did', 'dad', 'nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=')
+    ('did', 'igo', 'nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=')
+
 didering.validateDid(did, [method]):
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -7,7 +7,10 @@ except ImportError:
     import json
 
 
-class DataBuilder:
+class SignableDataBuilder:
+    """
+    Base class for Data that needs a signature
+    """
     def __init__(self):
         self.data = None
 

@@ -1,12 +1,4 @@
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 from pydidery.help import consensing
-from pydidery.help import signing
-from pydidery.lib import generating as gen
-from pydidery.models import responding as resp
 from tests.data import history_data_builder as builder
 
 
@@ -34,7 +26,7 @@ def testValidateDataInvalidSigsIncompleteMajority():
 
     consense.validateData(data)
 
-    history2 = response2.history
+    history2 = response2.historyBuilder
     assert consense.valid_data == {
         history2.signerSig: builder.SignedHistoryBuilder().build()
     }
@@ -71,7 +63,7 @@ def testValidateDataMajorityPasses():
 
     consense.validateData(data)
 
-    history2 = response2.history
+    history2 = response2.historyBuilder
 
     assert consense.valid_data == {
         history2.signerSig: builder.SignedHistoryBuilder().build()
@@ -82,309 +74,144 @@ def testValidateDataMajorityPasses():
 
 def testValidateDataMultiSigData():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    vk, sk, did = gen.keyGen()
-    datum1[HISTORY]["signer"] = 1
-    datum1[HISTORY]["signers"].append(vk)
-
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withInvalidSignerSignature()
+    ).withPort(8081)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory2, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory2, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": datum1_sig
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": datum1_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build()
     }
 
     consense.validateData(data)
 
+    history1 = response1.historyBuilder
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": datum1_sig
-            }
-        }
+        history1.rotationSig: history1.build()
     }
-    assert datum1_sig in consense.valid_match_counts
-    assert consense.valid_match_counts[datum1_sig] == 2
+    assert history1.rotationSig in consense.valid_match_counts
+    assert consense.valid_match_counts[history1.rotationSig] == 2
 
 
 def testValidateDataValidSigsConflictingData():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
-    datum2_sig = signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8081)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": datum2_sig
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build()
     }
 
     consense.validateData(data)
 
+    history1 = response1.historyBuilder
+    history3 = response3.historyBuilder
+
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        },
-        datum2_sig: {
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": datum2_sig
-            }
-        }
+        history1.signerSig: history1.build(),
+        history3.rotationSig: history3.build()
     }
-    assert datum1_sig in consense.valid_match_counts
-    assert consense.valid_match_counts[datum1_sig] == 2
-    assert datum2_sig in consense.valid_match_counts
-    assert consense.valid_match_counts[datum2_sig] == 1
+    assert history1.signerSig in consense.valid_match_counts
+    assert consense.valid_match_counts[history1.signerSig] == 2
+    assert history3.rotationSig in consense.valid_match_counts
+    assert consense.valid_match_counts[history3.rotationSig] == 1
 
 
 def testValidateDataIncompleteMajority():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
-    datum2_sig = signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8081)
+    response4 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8001)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": datum2_sig
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        ),
-        "http://localhost:8001/history": resp.responseFactory(
-            "http://localhost:8001/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": datum2_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build(),
+        "http://localhost:8001/history": response4.build()
     }
 
     consense.validateData(data)
 
+    history1 = response1.historyBuilder
+    history3 = response3.historyBuilder
+
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        },
-        datum2_sig: {
-            "history": datum2[HISTORY],
-            "signatures": {
-                "signer": datum2_sig
-            }
-        }
+        history1.signerSig: history1.build(),
+        history3.rotationSig: history3.build()
     }
-    assert datum1_sig in consense.valid_match_counts
-    assert consense.valid_match_counts[datum1_sig] == 2
-    assert datum2_sig in consense.valid_match_counts
-    assert consense.valid_match_counts[datum2_sig] == 2
+    assert history1.signerSig in consense.valid_match_counts
+    assert consense.valid_match_counts[history1.signerSig] == 2
+    assert history3.rotationSig in consense.valid_match_counts
+    assert consense.valid_match_counts[history3.rotationSig] == 2
 
 
 def testConsense():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    # Test simple majority
-    vk, sk, did = gen.keyGen()
-    datum1[HISTORY]["signer"] = 1
-    datum1[HISTORY]["signers"].append(vk)
-
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withInvalidSignerSignature()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    ).withPort(8081)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build()
     }
 
-    assert consense.consense(data)[0] == {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }
+    assert consense.consense(data)[0] == response3.historyBuilder.build()
 
 
 def testConsenseIncompleteMajority():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    vk, sk, did = gen.keyGen()
-    datum1[HISTORY]["signer"] = 1
-    datum1[HISTORY]["signers"].append(vk)
-
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withInvalidSignerSignature()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8081)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": gen.historyGen()[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum2[SK1]))
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build()
     }
 
     assert consense.consense(data)[0] is None
@@ -392,114 +219,46 @@ def testConsenseIncompleteMajority():
 
 def testConsenseAllEqual():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
 
-    vk, sk, did = gen.keyGen()
-    datum1[HISTORY]["signer"] = 1
-    datum1[HISTORY]["signers"].append(vk)
-
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation()
+    ).withPort(8000)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.withPort(8000).build(),
+        "http://localhost:8080/history": response1.withPort(8080).build(),
+        "http://localhost:8081/history": response1.withPort(8081).build()
     }
 
-    assert consense.consense(data)[0] == {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-            }
-        }
+    signature = response1.historyBuilder.rotationSig
+
+    assert consense.consense(data)[0] == response1.historyBuilder.build()
+    assert signature in consense.valid_data
+    assert signature in consense.valid_match_counts
+    assert consense.valid_match_counts[signature] == 3
 
 
 def test50_50Split():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
-    datum2 = gen.historyGen()
 
-    vk, sk, did = gen.keyGen()
-    datum1[HISTORY]["signer"] = 1
-    datum1[HISTORY]["signers"].append(vk)
-
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    bHistory2 = json.dumps(datum2[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
+    response3 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8081)
+    response4 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withRotation().withRotation()
+    ).withPort(8001)
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                }
-            }
-        ),
-        "http://localhost:8001/history": resp.responseFactory(
-            "http://localhost:8001/history",
-            200,
-            {
-                "history": datum2[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory2, gen.key64uToKey(datum2[SK1]))
-                }
-            }
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        ),
-        "http://localhost:8081/history": resp.responseFactory(
-            "http://localhost:8081/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1])),
-                    "rotation": signing.signResource(bHistory1, gen.key64uToKey(datum1[SK2]))
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build(),
+        "http://localhost:8081/history": response3.build(),
+        "http://localhost:8001/history": response4.build()
     }
 
     assert consense.consense(data)[0] is None
@@ -507,79 +266,53 @@ def test50_50Split():
 
 def testValidateDataWithHTTPError():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
 
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withEmptyData()
+    ).withPort(8000).withStatus(400)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            400,
-            {}
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build()
     }
 
     consense.validateData(data)
 
+    history2 = response2.historyBuilder
+
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }
+        history2.signerSig: history2.build()
     }
     assert consense.valid_match_counts == {
-        datum1_sig: 1
+        history2.signerSig: 1
     }
 
 
 def testValidateDataWithTimeOut():
     consense = consensing.Consense()
-    datum1 = gen.historyGen()  # (history, vk1, sk1, vk2, sk2)
 
-    bHistory1 = json.dumps(datum1[HISTORY], ensure_ascii=False, separators=(',', ':')).encode()
-    datum1_sig = signing.signResource(bHistory1, gen.key64uToKey(datum1[SK1]))
+    response1 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder().withEmptyData()
+    ).withPort(8000).withStatus(0)
+    response2 = builder.DideryResponseBuilder(
+        builder.SignedHistoryBuilder()
+    )
 
     data = {
-        "http://localhost:8000/history": resp.responseFactory(
-            "http://localhost:8000/history",
-            0,
-            {}
-        ),
-        "http://localhost:8080/history": resp.responseFactory(
-            "http://localhost:8080/history",
-            200,
-            {
-                "history": datum1[HISTORY],
-                "signatures": {
-                    "signer": datum1_sig
-                }
-            }
-        )
+        "http://localhost:8000/history": response1.build(),
+        "http://localhost:8080/history": response2.build()
     }
 
     consense.validateData(data)
 
+    history2 = response2.historyBuilder
+
     assert consense.valid_data == {
-        datum1_sig: {
-            "history": datum1[HISTORY],
-            "signatures": {
-                "signer": datum1_sig
-            }
-        }
+        history2.signerSig: history2.build()
     }
     assert consense.valid_match_counts == {
-        datum1_sig: 1
+        history2.signerSig: 1
     }

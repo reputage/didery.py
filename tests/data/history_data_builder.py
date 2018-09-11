@@ -1,25 +1,30 @@
-from .builder import DataBuilder
+from .builder import SignableDataBuilder
 from pydidery.models.responding import DideryResponse, HistoryData
 
 
-class BasicHistoryBuilder(DataBuilder):
+class BasicHistoryBuilder(SignableDataBuilder):
     def __init__(self):
-        DataBuilder.__init__(self)
+        SignableDataBuilder.__init__(self)
 
-        self._vk = 'u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc='
-        self._sk = 'jWjzoCHRzcBijF4dvGc-4VMSx8u8DlRPekDbfSC6BgS7xNYgTbzIB276Uas8cfZknvcbGgwFnH4Pdx_pEwRpNw=='
-        self._pvk = 'u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc='
-        self._psk = 'jWjzoCHRzcBijF4dvGc-4VMSx8u8DlRPekDbfSC6BgS7xNYgTbzIB276Uas8cfZknvcbGgwFnH4Pdx_pEwRpNw=='
-        self._ppvk = 'unwAREZuniXEM_lPYX6BW4QZqmrO3C1mLVVlaaFQCMA='
-        self._ppsk = 'MyErIV4IZhhcX5W6QgXRFq7mxz2yti_kpFVVV80_dYu6fABERm6eJcQz-U9hfoFbhBmqas7cLWYtVWVpoVAIwA=='
-        self._pppvk = 'S62CjYF6I05P8erybWY92a8zvOBnVVXDciPWxdxsiA8='
-        self._pppsk = '2fiz_Zvcy602CsgOxbiejq7el-Kfpz9gSmEa6rjUxNxLrYKNgXojTk_x6vJtZj3ZrzO84GdVVcNyI9bF3GyIDw=='
+        self._ver_keys = [
+            'u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc=',
+            'u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc=',
+            'unwAREZuniXEM_lPYX6BW4QZqmrO3C1mLVVlaaFQCMA=',
+            'S62CjYF6I05P8erybWY92a8zvOBnVVXDciPWxdxsiA8='
+        ]
+        self._sign_keys = [
+            'jWjzoCHRzcBijF4dvGc-4VMSx8u8DlRPekDbfSC6BgS7xNYgTbzIB276Uas8cfZknvcbGgwFnH4Pdx_pEwRpNw==',
+            'jWjzoCHRzcBijF4dvGc-4VMSx8u8DlRPekDbfSC6BgS7xNYgTbzIB276Uas8cfZknvcbGgwFnH4Pdx_pEwRpNw==',
+            'MyErIV4IZhhcX5W6QgXRFq7mxz2yti_kpFVVV80_dYu6fABERm6eJcQz-U9hfoFbhBmqas7cLWYtVWVpoVAIwA==',
+            '2fiz_Zvcy602CsgOxbiejq7el-Kfpz9gSmEa6rjUxNxLrYKNgXojTk_x6vJtZj3ZrzO84GdVVcNyI9bF3GyIDw=='
+        ]
+        self._next_key_index = 2
         self.data = {
             'id': 'did:dad:u8TWIE28yAdu-lGrPHH2ZJ73GxoMBZx-D3cf6RMEaTc=',
             'signer': 0,
             'signers': [
-                self._vk,
-                self._pvk
+                self._ver_keys[0],
+                self._ver_keys[1]
             ]
         }
 
@@ -37,6 +42,21 @@ class BasicHistoryBuilder(DataBuilder):
 
     def withAdditionToSigners(self, vk):
         self.data["signers"].append(vk)
+
+        return self
+
+    def withRotation(self):
+        vk = self._ver_keys[self._next_key_index]
+        self.data['signers'].append(vk)
+        self.data['signer'] += 1
+        # So that test data is deterministic the key index is modulod by the length of the self._ver_keys array
+        self._next_key_index = (self._next_key_index + 1) % len(self._ver_keys)
+
+        return self
+
+    def withEmptyData(self):
+        self.data = {}
+
         return self
 
     @property
@@ -52,7 +72,7 @@ class SignedHistoryBuilder(BasicHistoryBuilder):
         self._invalid_sk = 'oybqsj-N4sTVZaST-plc0W4AIVcMOhqXIjlvXSimQ1ct1fPwrG4av1uk72-gJEDFQBa5LnPeFWJ7fUeZmPuUTQ=='
 
         self._signatures = {
-            "signer": self._signData(self._sk)
+            "signer": self._signData(self._sign_keys[0])
         }
 
     def withInvalidSignerSignature(self):
@@ -61,6 +81,18 @@ class SignedHistoryBuilder(BasicHistoryBuilder):
 
     def withInvalidRotationSignature(self):
         self._signatures["rotation"] = self._signData(self._invalid_sk)
+        return self
+
+    def withRotation(self):
+        BasicHistoryBuilder.withRotation(self)
+
+        # get index into self._sign_keys
+        signer_index = (self.data['signer'] - 1) % len(self._ver_keys)
+        rotation_index = self.data['signer'] % len(self._ver_keys)
+
+        self._signatures["signer"] = self._signData(self._sign_keys[signer_index])
+        self._signatures["rotation"] = self._signData(self._sign_keys[rotation_index])
+
         return self
 
     def build(self):
@@ -87,6 +119,11 @@ class SignedHistoryBuilder(BasicHistoryBuilder):
 
 class DideryResponseBuilder:
     def __init__(self, history):
+        """
+        Build a models.responding.DideryResponse object
+
+        :param history: instance of BasicHistoryBuilder or subclass of it
+        """
         self._url = "http://localhost:8080/history"
         self._status = 200
         self._history = history
@@ -104,7 +141,7 @@ class DideryResponseBuilder:
         return self
 
     def build(self):
-        return DideryResponse(self.url, self.status, HistoryData(self.history.build()))
+        return DideryResponse(self.url, self.status, HistoryData(self.historyBuilder.build()))
 
     @property
     def url(self):
@@ -115,5 +152,5 @@ class DideryResponseBuilder:
         return self._status
 
     @property
-    def history(self):
+    def historyBuilder(self):
         return self._history

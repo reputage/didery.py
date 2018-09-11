@@ -5,88 +5,6 @@ This module provides various key generation and manipulation functions
 for use with the didery server. Keys are generated using the python
 libnacl library.
 
-generating.didGen(vk, [method])
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-didGen accepts an EdDSA (Ed25519) key in the form of a byte string and
-returns a DID.
-
-| **vk** (*required*)- 32 byte verifier/public key from EdDSA (Ed25519)
-  key
-| **method** (*optional*) - `W3C did
-  method <https://w3c-ccg.github.io/did-spec/#specific-did-method-schemes>`__\ string.
-  Defaults to "dad".
-
-**returns** - `W3C DID <https://w3c-ccg.github.io/did-spec/>`__ string
-
-Example
-^^^^^^^
-
-.. code:: python
-
-    import pydidery.lib.generating as gen
-
-
-    vk = b'\xfdv\xae\xeb\xe7\x08Q\xaf\xedY\xcf\x8b"\xfc\xa6\xeb\x1c@\x89}\xdb\xed\x16\xa5\xb6\x88\x18\xc8\x1a%O\x83'
-
-    # use the default method
-    did1 = gen.didGen(vk)
-
-    # or you can specify a method like igo
-    did2 = gen.didGen(vk, "igo")
-
-    print(did1)
-    print(did2)
-
-Output
-^^^^^^
-
-::
-
-    did:dad:_Xau6-cIUa_tWc-LIvym6xxAiX3b7RaltogYyBolT4M=
-    did:igo:_Xau6-cIUa_tWc-LIvym6xxAiX3b7RaltogYyBolT4M=
-
-generating.didGen64(vk64u, [method]):
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-didGen accepts a url-file safe base64 key in the form of a string and
-returns a DID.
-
-| **vk64u** (*required*)- base64 url-file safe verifier/public key from
-  EdDSA (Ed25519) key
-| **method** (*optional*) - `W3C did
-  method <https://w3c-ccg.github.io/did-spec/#specific-did-method-schemes>`__\ string.
-  Defaults to "dad"
-
-**returns** - `W3C DID <https://w3c-ccg.github.io/did-spec/>`__ string
-
-Example
-^^^^^^^
-
-.. code:: python
-
-    import pydidery.lib.generating as gen
-
-
-    vk = "nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
-
-    # use the default method
-    did1 = gen.didGen64(vk)
-
-    # or you can specify a method like igo
-    did2 = gen.didGen64(vk, "igo")
-
-    print(did1)
-    print(did2)
-
-Output
-^^^^^^
-
-::
-
-    did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
-    did:igo:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI=
-
 generating.keyToKey64u(key):
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -175,14 +93,16 @@ Example
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
 
     # generate key pair with custom seed
-    vk, sk = gen.keyGen(seed)
+    vk, sk, did = gen.keyGen(seed)
     print(vk)
     print(sk)
+    print(did)
 
     # generate key pair with built in seed
-    vk, sk = gen.keyGen()
+    vk, sk, did = gen.keyGen()
     print(vk)
     print(sk)
+    print(did)
 
 Output
 ^^^^^^
@@ -191,42 +111,11 @@ Output
 
     0RvCaAvHInLezCP97jaHoPokAGfP5LTpwAvcR4YqNxQ=
     qNrFUd0pqLbTLIIo_xXpQFuKrqFJe45GO_dMt_OqPITRG8JoC8cict7MI_3uNoeg-iQAZ8_ktOnAC9xHhio3FA==
+    did:dad:0RvCaAvHInLezCP97jaHoPokAGfP5LTpwAvcR4YqNxQ=
 
     0hZpSyBosXHj52TkceVdJoPGmGt26D5ErAEO0I5m-bg=
     qNjuiN_MijfK8eIvJJ4mf7IRMh7noEK92KAUNXzNPPXSFmlLIGixcePnZORx5V0mg8aYa3boPkSsAQ7Qjmb5uA==
-
-generating.signResource(resource, sKey)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-signResource accepts a byte string and an EdDSA (Ed25519) key in the
-form of a byte string and returns a base64 url-file safe signature.
-
-**resource** (*required*)- byte string to be signed **sKey**
-(*required*)- signing/private key from EdDSA (Ed25519) key
-
-**returns** - url-file safe base64 signature string
-
-Example
-^^^^^^^
-
-.. code:: python
-
-    import pydidery.lib.generating as gen
-
-    # generate key pair with custom seed
-    vk, sk = gen.keyGen()
-    resource = b'{"data":"Test!"}'
-
-    signature = gen.signResource(resource, sk)
-
-    print(signature)
-
-Output
-^^^^^^
-
-::
-
-    D4Z8_zeX42n0H_MQQyZWyQ3gW5me1iL4dZetRvo-0_f3tINIcKWrmrtjTFykWhNhHk36Ur2KlVmkdGRgtp8vDQ==
+    did:dad:0hZpSyBosXHj52TkceVdJoPGmGt26D5ErAEO0I5m-bg=
 
 generating.historyGen(seed=None):
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,6 +1,6 @@
-#######
-Library
-#######
+##############
+Library Models
+##############
 
 Python library for generating keys and broadcasting or polling didery servers.
 
@@ -8,9 +8,5 @@ Python library for generating keys and broadcasting or polling didery servers.
    :glob:
    :titlesonly:
 
-   getting_started
-   didering
-   generating
-   historying
-   history_eventing
-   otping
+   consensing
+   responding

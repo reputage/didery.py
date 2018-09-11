@@ -36,6 +36,8 @@ Options:
   -d, --download  Download otp encrypted private key.
   -D, --delete    Delete rotation history.
   -m, --remove    Remove otp encrypted private key.
+  -e, --events    Pull a record of all history rotation events for a specified
+                  did.
   -v              Verbosity of console output. There are 5 verbosity levels
                   from '' to '-vvvv.'
   --data PATH     Path to the data file.

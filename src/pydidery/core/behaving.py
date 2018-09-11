@@ -1,3 +1,8 @@
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from ioflo.aid import getConsole
 from ioflo.aid import odict
 from ioflo.base import doify
@@ -5,6 +10,7 @@ from ioflo.base import doify
 
 from ..lib import historying as hist
 from ..lib import otping as otp
+from ..lib import history_eventing as event
 
 
 def outputResult(result, console, verbosity):
@@ -14,11 +20,11 @@ def outputResult(result, console, verbosity):
         if verbosity == console.Wordage.profuse:
             console.profuse("{}:\t{}\n".format(url, data))
         if verbosity == console.Wordage.concise:
-            if data[1] == 0:
+            if data.status == 0:
                 console.concise("{}:\tRequest Timed Out".format(url))
             else:
-                console.concise("{}:\tHTTP_{}\n".format(url, data[1]))
-        if 300 > data[1] >= 200:
+                console.concise("{}:\tHTTP_{}\n".format(url, data.status))
+        if 300 > data.status >= 200:
             successful += 1
 
     console.terse("\n{}/{} requests succeeded.\n".format(successful, len(result)))
@@ -159,11 +165,11 @@ def retrieval(self):
     if data:
         console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["history"], data["signatures"]))
         for url, result in results.items():
-            console.verbose("{}:\t{}\n".format(url, result))
+            console.verbose("{}\n".format(url, result))
     else:
         console.terse("Consensus Failed.\n")
         for url, result in results.items():
-            console.concise("{}:\t{}\n".format(url, result))
+            console.concise("{}\n".format(result))
 
     self.complete.value = True
 
@@ -190,13 +196,15 @@ def download(self):
     data, results = otp.getOtpBlob(self.did.value, self.servers.value)
 
     if data:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["otp_data"], data["signatures"]))
+        formatted_data = json.dumps(data["otp_data"], indent=4)
+        formatted_sigs = json.dumps(data["signatures"], indent=4)
+        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(formatted_data, formatted_sigs))
         for url, result in results.items():
-            console.verbose("{}:\t{}\n".format(url, result))
+            console.verbose("{}\n".format(result))
     else:
         console.terse("Consensus Failed.\n")
         for url, result in results.items():
-            console.concise("{}:\t{}\n".format(url, result))
+            console.concise("{}\n".format(result))
 
     self.complete.value = True
 
@@ -251,5 +259,38 @@ def remove(self):
     result = otp.removeOtpBlob(self.did.value, self.sk.value, self.servers.value)
 
     outputResult(result, console, self.verbosity.value)
+
+    self.complete.value = True
+
+
+@doify('Events', ioinits=odict(
+    servers="",
+    did="",
+    test="",
+    complete=odict(value=False),
+    verbosity="",
+    start=""
+))
+def events(self):
+    if not self.start.value:
+        self.complete.value = True
+        return
+
+    console = getConsole("didery.py", verbosity=self.verbosity.value)
+
+    console.terse("\n")
+    console.concise("Servers: {}\n".format(self.servers.value))
+    console.profuse("DID: {}\n".format(self.did.value))
+
+    data, results = event.getHistoryEvents(self.did.value, self.servers.value)
+
+    if data:
+        console.terse("Result: \nData:\t{}\n".format(data["events"]))
+        for url, result in results.items():
+            console.verbose("{}\n".format(result))
+    else:
+        console.terse("Consensus Failed.\n")
+        for url, result in results.items():
+            console.concise("{}\n".format(result))
 
     self.complete.value = True

@@ -96,10 +96,12 @@ class SignedHistoryBuilder(BasicHistoryBuilder):
         return self
 
     def build(self):
-        return {
-            "history": self.data,
-            "signatures": self._signatures
-        }
+        return HistoryData(
+            {
+                "history": self.data,
+                "signatures": self._signatures
+            }
+        )
 
     @property
     def signatures(self):
@@ -117,16 +119,72 @@ class SignedHistoryBuilder(BasicHistoryBuilder):
             return None
 
 
+class CompositeHistoryBuilder(SignableDataBuilder):
+    def __init__(self):
+        SignableDataBuilder.__init__(self)
+        self.data = [
+            SignedHistoryBuilder()
+        ]
+
+    def withInvalidInceptionSig(self):
+        self.data[0] = SignedHistoryBuilder().withInvalidSignerSignature()
+
+        return self
+
+    def withRotations(self, num_rotations=1):
+        """
+        function calculates how many rotations have already happened and
+        then adds "num_rotations" more rotations before adding the data to the history
+        :return: self
+        """
+        for i in range(0, num_rotations):
+            history = SignedHistoryBuilder()
+
+            for i in range(0, len(self.data)):
+                history.withRotation()
+
+            self.data.append(history)
+
+        return self
+
+    def withInvalidRotationSigAt(self, index):
+        """
+        sets the rotation signature to an invalid value for history rotation event at "index"
+        :param index: which rotation should be invalidated
+        :return: self
+        """
+        # Tests will fail gracefully if invalid index is supplied
+        assert index < len(self.data)
+        assert index >= 0
+
+        self.data[index].withInvalidRotationSignature()
+
+        return self
+
+    def withEmptyData(self):
+        self.data = []
+
+        return self
+
+    def build(self):
+        composite = {}
+        for key, value in enumerate(self.data):
+            composite[str(key)] = value.build()
+
+        return composite
+
+
 class DideryResponseBuilder:
     def __init__(self, history):
         """
         Build a models.responding.DideryResponse object
 
-        :param history: instance of BasicHistoryBuilder or subclass of it
+        :param history: instance of SignableDataBuilder or subclass of it
         """
         self._url = "http://localhost:8080/history"
         self._status = 200
-        self._history = history
+        self._history_builder = history
+        self._history = history.build()
 
     def withStatus(self, http_status):
         self._status = http_status
@@ -141,7 +199,7 @@ class DideryResponseBuilder:
         return self
 
     def build(self):
-        return DideryResponse(self.url, self.status, HistoryData(self.historyBuilder.build()))
+        return DideryResponse(self.url, self.status, self._history)
 
     @property
     def url(self):
@@ -153,4 +211,4 @@ class DideryResponseBuilder:
 
     @property
     def historyBuilder(self):
-        return self._history
+        return self._history_builder

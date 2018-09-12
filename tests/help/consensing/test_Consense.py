@@ -28,7 +28,7 @@ def testValidateDataInvalidSigsIncompleteMajority():
 
     history2 = response2.historyBuilder
     assert consense.valid_data == {
-        history2.signerSig: builder.SignedHistoryBuilder().build()
+        history2.signerSig: builder.SignedHistoryBuilder().build().data
     }
     assert consense.valid_match_counts == {
         history2.signerSig: 1
@@ -66,7 +66,7 @@ def testValidateDataMajorityPasses():
     history2 = response2.historyBuilder
 
     assert consense.valid_data == {
-        history2.signerSig: builder.SignedHistoryBuilder().build()
+        history2.signerSig: builder.SignedHistoryBuilder().build().data
     }
     assert history2.signerSig in consense.valid_match_counts
     assert consense.valid_match_counts[history2.signerSig] == 2
@@ -95,7 +95,7 @@ def testValidateDataMultiSigData():
 
     history1 = response1.historyBuilder
     assert consense.valid_data == {
-        history1.rotationSig: history1.build()
+        history1.rotationSig: history1.build().data
     }
     assert history1.rotationSig in consense.valid_match_counts
     assert consense.valid_match_counts[history1.rotationSig] == 2
@@ -126,8 +126,8 @@ def testValidateDataValidSigsConflictingData():
     history3 = response3.historyBuilder
 
     assert consense.valid_data == {
-        history1.signerSig: history1.build(),
-        history3.rotationSig: history3.build()
+        history1.signerSig: history1.build().data,
+        history3.rotationSig: history3.build().data
     }
     assert history1.signerSig in consense.valid_match_counts
     assert consense.valid_match_counts[history1.signerSig] == 2
@@ -164,8 +164,8 @@ def testValidateDataIncompleteMajority():
     history3 = response3.historyBuilder
 
     assert consense.valid_data == {
-        history1.signerSig: history1.build(),
-        history3.rotationSig: history3.build()
+        history1.signerSig: history1.build().data,
+        history3.rotationSig: history3.build().data
     }
     assert history1.signerSig in consense.valid_match_counts
     assert consense.valid_match_counts[history1.signerSig] == 2
@@ -192,7 +192,8 @@ def testConsense():
         "http://localhost:8081/history": response3.build()
     }
 
-    assert consense.consense(data)[0] == response3.historyBuilder.build()
+    historyObj = response3.historyBuilder.build()
+    assert consense.consense(data)[0] == historyObj.data
 
 
 def testConsenseIncompleteMajority():
@@ -232,7 +233,7 @@ def testConsenseAllEqual():
 
     signature = response1.historyBuilder.rotationSig
 
-    assert consense.consense(data)[0] == response1.historyBuilder.build()
+    assert consense.consense(data)[0] == response1.historyBuilder.build().data
     assert signature in consense.valid_data
     assert signature in consense.valid_match_counts
     assert consense.valid_match_counts[signature] == 3
@@ -284,7 +285,7 @@ def testValidateDataWithHTTPError():
     history2 = response2.historyBuilder
 
     assert consense.valid_data == {
-        history2.signerSig: history2.build()
+        history2.signerSig: history2.build().data
     }
     assert consense.valid_match_counts == {
         history2.signerSig: 1
@@ -311,7 +312,7 @@ def testValidateDataWithTimeOut():
     history2 = response2.historyBuilder
 
     assert consense.valid_data == {
-        history2.signerSig: history2.build()
+        history2.signerSig: history2.build().data
     }
     assert consense.valid_match_counts == {
         history2.signerSig: 1

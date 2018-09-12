@@ -141,7 +141,8 @@ class CompositeConsense(AbstractConsense):
                 self.addError(url, data, status)  # Error with request
                 continue
 
-            valid = True
+            valid = True if len(data) > 0 else False
+
             for index, event in data.items():
                 if not event.valid:
                     valid = False

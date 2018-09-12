@@ -226,3 +226,33 @@ def testValidateDataWithTimeOut():
     assert consense.valid_match_counts == {
         sha: 1
     }
+
+
+def testValidateDataWith200StatusNoData():
+    consense = consensing.CompositeConsense()
+
+    response1 = builder.DideryResponseBuilder(
+        builder.CompositeHistoryBuilder().withRotations()
+    ).withPort(8000)
+    response2 = builder.DideryResponseBuilder(
+        builder.CompositeHistoryBuilder().withEmptyData()
+    ).withStatus(200)
+
+    data = {
+        'http://localhost:8000/event/': response1.build(),
+        'http://localhost:8080/event/': response2.build()
+    }
+
+    consense.validateData(data)
+
+    exp_data = response1.historyBuilder.build()
+    sha = sha256(str(ODict(exp_data)).encode()).hexdigest()
+
+    assert len(consense.valid_data) == 1
+    assert sha in consense.valid_data
+    assert consense.valid_data[sha]['0'] == exp_data['0'].data
+    assert consense.valid_data[sha]['1'] == exp_data['1'].data
+    assert sha in consense.valid_match_counts
+    assert consense.valid_match_counts == {
+        sha: 1
+    }

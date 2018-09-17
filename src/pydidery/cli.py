@@ -112,6 +112,14 @@ Command line interface for didery.py library.  Path to config file containing se
     help="Verbosity of console output. There are 5 verbosity levels from '' to '-vvvv.'"
 )
 @click.option(
+    '--mute',
+    '-M',
+    multiple=False,
+    is_flag=True,
+    default=False,
+    help="Mute all console output except prompts."
+)
+@click.option(
     '--data',
     multiple=False,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
@@ -126,8 +134,14 @@ Command line interface for didery.py library.  Path to config file containing se
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, data, did, config):
-    verbose = v if v <= 4 else 4
+def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, mute, data, did, config):
+    if mute:
+        verbose = 0
+    else:
+        v = 1 if v == 0 else v
+
+        verbose = v if v <= 4 else 4
+
     preloads = [
         ('.main.incept.verbosity', odict(value=verbose)),
         ('.main.upload.verbosity', odict(value=verbose)),
@@ -152,7 +166,7 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
     options = [incept, upload, rotate, update, retrieve, download, delete, remove, events]
     count = options.count(True)
     if count > 1:
-        click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, --download, delete, remove, or events.")
+        click.echo("Cannot combine --incept --upload, --rotate, --update, --retrieve, --download, --delete, --remove, or --events.")
         return
     if count == 0:
         click.echo("No options given. For help use --help. Exiting Didery.py")
@@ -228,7 +242,7 @@ def inceptSetup(config, data):
     else:
         data = h.parseDataFile(data, "history")
 
-        sk = click.prompt("Please enter you signing/private key")
+        sk = click.prompt("Enter your signing/private key")
 
     preloads = [
         ('.main.incept.servers', odict(value=config["servers"])),
@@ -245,7 +259,7 @@ def uploadSetup(config, data):
 
     data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Please enter you signing/private key")
+    sk = click.prompt("Enter your signing/private key")
 
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
@@ -262,10 +276,10 @@ def rotateSetup(config, data):
 
     data = h.parseDataFile(data, "history")
 
-    csk = click.prompt("Please enter your current signing/private key")
-    rsk = click.prompt("Please enter the signing/private key you are rotating to")
+    csk = click.prompt("Enter your current signing/private key")
+    rsk = click.prompt("Enter your pre-rotated signing/private key")
 
-    if click.confirm("Do you need a new pre-rotated key pair generated"):
+    if click.confirm("Generate a new pre-rotated key pair?"):
         pvk, psk = keyery()
         data["signers"].append(pvk)
         data["signer"] = int(data["signer"]) + 1
@@ -287,7 +301,7 @@ def updateSetup(config, data):
 
     data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Please enter you signing/private key")
+    sk = click.prompt("Enter your signing/private key")
 
     preloads = [
         ('.main.update.servers', odict(value=config["servers"])),
@@ -333,7 +347,7 @@ def deleteSetup(config, did):
 
     h.validateDid(did)
 
-    sk = click.prompt("Please enter your signing/private key")
+    sk = click.prompt("Enter your signing/private key")
 
     preloads = [
         ('.main.delete.servers', odict(value=config["servers"])),
@@ -350,7 +364,7 @@ def removeSetup(config, did):
 
     h.validateDid(did)
 
-    sk = click.prompt("Please enter your signing/private key")
+    sk = click.prompt("Enter your signing/private key")
 
     preloads = [
         ('.main.remove.servers', odict(value=config["servers"])),
@@ -388,8 +402,8 @@ def historyInit():
 
         keyFile.write(json.dumps(keys, encoding='utf-8'))
 
-    click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
-                 'Make a copy and store them securely. \n'
+    click.prompt('\nKeys generated in ./didery.keys.json. \n'
+                 'Make a copy and store them securely. \n\n'
                  'The file will be deleted after pressing any key+Enter')
 
     os.remove('didery.keys.json')
@@ -400,7 +414,7 @@ def historyInit():
 
 
 def keyery():
-    sk, vk, did = gen.keyGen()
+    vk, sk, did = gen.keyGen()
 
     with open('didery.keys.json', 'w') as keyFile:
         keys = {
@@ -410,8 +424,8 @@ def keyery():
 
         keyFile.write(json.dumps(keys, encoding='utf-8'))
 
-    click.prompt('\nKeys have been generated and stored in the current directory under didery.keys.json. \n\n'
-                 'Make a copy and store them securely. \n'
+    click.prompt('\nKeys generated in ./didery.keys.json. \n'
+                 'Make a copy and store them securely. \n\n'
                  'The file will be deleted after pressing any key+Enter')
 
     os.remove('didery.keys.json')

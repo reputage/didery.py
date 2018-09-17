@@ -29,6 +29,7 @@ Options:
                   did.
   -v              Verbosity of console output. There are 5 verbosity levels
                   from '' to '-vvvv.'
+  -M, --mute      Mute all console output except prompts.
   --data PATH     Path to the data file.
   --did TEXT      decentralized identifier(did).
   --help          Show this message and exit.

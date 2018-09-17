@@ -3,6 +3,7 @@ try:
 except ImportError:
     import json
 
+from urllib.parse import urlparse
 from ioflo.aid import getConsole
 from ioflo.aid import odict
 from ioflo.base import doify
@@ -13,21 +14,54 @@ from ..lib import otping as otp
 from ..lib import history_eventing as event
 
 
-def outputResult(result, console, verbosity):
+def outputSetupInfo(console, servers, data=None, did=None):
+    console.terse("\n")
+    console.concise("Servers:\n{}\n\n".format(servers))
+
+    if data:
+        console.profuse("Data:\n{}\n\n".format(data))
+
+    if did:
+        console.profuse("DID: {}\n\n".format(did))
+
+
+def outputPushedResult(result, console, verbosity):
     successful = 0
-    console.concise("Result: \n")
+    profuse = ""
+    concise = ""
+
     for url, data in result.items():
+        parsed_url = urlparse(url)
         if verbosity == console.Wordage.profuse:
-            console.profuse("{}:\t{}\n".format(url, data))
+            profuse += "{}://{}:\t{}\n".format(parsed_url.scheme, parsed_url.netloc, data)
+
         if verbosity == console.Wordage.concise:
             if data.status == 0:
-                console.concise("{}:\tRequest Timed Out".format(url))
+                concise += "{}://{}:\tRequest Timed Out\n".format(parsed_url.scheme, parsed_url.netloc)
             else:
-                console.concise("{}:\tHTTP_{}\n".format(url, data.status))
+                concise += "{}://{}:\tHTTP_{}\n".format(parsed_url.scheme, parsed_url.netloc, data.status)
+
         if 300 > data.status >= 200:
             successful += 1
 
-    console.terse("\n{}/{} requests succeeded.\n".format(successful, len(result)))
+    console.terse("\n{}/{} requests succeeded.\n\n".format(successful, len(result)))
+    console.concise(concise)
+    console.profuse(profuse)
+
+
+def outputPulledResult(data, results, console):
+    if data:
+        formatted_data = json.dumps(data, indent=4)
+
+        console.terse("Data:\t{}\n".format(formatted_data))
+
+        for url, result in results.items():
+            console.verbose("{}\n".format(result))
+    else:
+        console.terse("Consensus Failed.\n")
+
+        for url, result in results.items():
+            console.concise("{}\n".format(result))
 
 
 @doify('Incept', ioinits=odict(
@@ -46,13 +80,11 @@ def incept(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers:\n{}\n\n".format(self.servers.value))
-    console.profuse("Data:\n{}\n\n".format(self.data.value))
+    outputSetupInfo(console, self.servers.value, data=self.data.value)
 
     result = hist.postHistory(self.data.value, self.sk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -73,13 +105,11 @@ def upload(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers:\n{}\n\n".format(self.servers.value))
-    console.profuse("Data:\n{}\n\n".format(self.data.value))
+    outputSetupInfo(console, self.servers.value, data=self.data.value)
 
     result = otp.postOtpBlob(self.data.value, self.sk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -102,13 +132,11 @@ def rotation(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers:\n{}\n\n".format(self.servers.value))
-    console.profuse("Data:\n{}\n\n".format(self.data.value))
+    outputSetupInfo(console, self.servers.value, data=self.data.value)
 
     result = hist.putHistory(self.data.value, self.sk.value, self.psk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -130,13 +158,11 @@ def update(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers:\n{}\n\n".format(self.servers.value))
-    console.profuse("Data:\n{}\n\n".format(self.data.value))
+    outputSetupInfo(console, self.servers.value, data=self.data.value)
 
     result = otp.putOtpBlob(self.data.value, self.sk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -156,20 +182,11 @@ def retrieval(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers: {}\n".format(self.servers.value))
-    console.profuse("DID: {}\n".format(self.did.value))
+    outputSetupInfo(console, self.servers.value, did=self.did.value)
 
     data, results = hist.getHistory(self.did.value, self.servers.value)
 
-    if data:
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(data["history"], data["signatures"]))
-        for url, result in results.items():
-            console.verbose("{}\n".format(url, result))
-    else:
-        console.terse("Consensus Failed.\n")
-        for url, result in results.items():
-            console.concise("{}\n".format(result))
+    outputPulledResult(data, results, console)
 
     self.complete.value = True
 
@@ -189,22 +206,11 @@ def download(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers: {}\n".format(self.servers.value))
-    console.profuse("DID: {}\n".format(self.did.value))
+    outputSetupInfo(console, self.servers.value, did=self.did.value)
 
     data, results = otp.getOtpBlob(self.did.value, self.servers.value)
 
-    if data:
-        formatted_data = json.dumps(data["otp_data"], indent=4)
-        formatted_sigs = json.dumps(data["signatures"], indent=4)
-        console.terse("Result: \nData:\t{}\nSignatures:\t{}\n".format(formatted_data, formatted_sigs))
-        for url, result in results.items():
-            console.verbose("{}\n".format(result))
-    else:
-        console.terse("Consensus Failed.\n")
-        for url, result in results.items():
-            console.concise("{}\n".format(result))
+    outputPulledResult(data, results, console)
 
     self.complete.value = True
 
@@ -225,13 +231,11 @@ def delete(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers: {}\n".format(self.servers.value))
-    console.profuse("DID: {}\n".format(self.did.value))
+    outputSetupInfo(console, self.servers.value, did=self.did.value)
 
     result = hist.deleteHistory(self.did.value, self.sk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -252,13 +256,11 @@ def remove(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers: {}\n".format(self.servers.value))
-    console.profuse("DID: {}\n".format(self.did.value))
+    outputSetupInfo(console, self.servers.value, did=self.did.value)
 
     result = otp.removeOtpBlob(self.did.value, self.sk.value, self.servers.value)
 
-    outputResult(result, console, self.verbosity.value)
+    outputPushedResult(result, console, self.verbosity.value)
 
     self.complete.value = True
 
@@ -278,19 +280,10 @@ def events(self):
 
     console = getConsole("didery.py", verbosity=self.verbosity.value)
 
-    console.terse("\n")
-    console.concise("Servers: {}\n".format(self.servers.value))
-    console.profuse("DID: {}\n".format(self.did.value))
+    outputSetupInfo(console, self.servers.value, did=self.did.value)
 
     data, results = event.getHistoryEvents(self.did.value, self.servers.value)
 
-    if data:
-        console.terse("Result: \nData:\t{}\n".format(data["events"]))
-        for url, result in results.items():
-            console.verbose("{}\n".format(result))
-    else:
-        console.terse("Consensus Failed.\n")
-        for url, result in results.items():
-            console.concise("{}\n".format(result))
+    outputPulledResult(data, results, console)
 
     self.complete.value = True

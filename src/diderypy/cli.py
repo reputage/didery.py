@@ -20,9 +20,9 @@ import ioflo.app.run
 
 from ioflo.aid import odict
 
-from pydidery.help import helping as h
-from pydidery.diderying import ValidationError
-from pydidery.lib import generating as gen
+from diderypy.help import helping as h
+from diderypy.diderying import ValidationError
+from diderypy.lib import generating as gen
 
 try:
     import simplejson as json
@@ -217,7 +217,7 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
             )
         )
     )
-    floScriptpath = os.path.join(projectDirpath, "pydidery/flo/main.flo")
+    floScriptpath = os.path.join(projectDirpath, "diderypy/flo/main.flo")
 
     """ Main entry point for ioserve CLI"""
     ioflo.app.run.run(  name="didery.py",
@@ -225,7 +225,7 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
                         real=True,
                         retro=True,
                         filepath=floScriptpath,
-                        behaviors=['pydidery.core'],
+                        behaviors=['diderypy.core'],
                         mode='',
                         username='',
                         password='',

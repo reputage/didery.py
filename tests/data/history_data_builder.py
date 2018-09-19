@@ -1,5 +1,5 @@
 from .builder import SignableDataBuilder
-from pydidery.models.responding import DideryResponse, HistoryData
+from diderypy.models.responding import DideryResponse, HistoryData
 
 
 class BasicHistoryBuilder(SignableDataBuilder):

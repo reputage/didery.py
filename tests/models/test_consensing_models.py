@@ -3,11 +3,11 @@ try:
 except ImportError:
     import json
 
-from pydidery.help import consensing
-from pydidery.help import signing
-from pydidery.lib import generating as gen
-from pydidery.models import responding as resp
-from pydidery.models import consensing as consenseModel
+from diderypy.help import consensing
+from diderypy.help import signing
+from diderypy.lib import generating as gen
+from diderypy.models import responding as resp
+from diderypy.models import consensing as consenseModel
 
 
 HISTORY = 0

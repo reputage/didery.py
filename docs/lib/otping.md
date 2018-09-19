@@ -12,8 +12,8 @@ postOtpBlob accepts otp blob dict, a signing/private key, and a list of urls and
 
 #### Example
 ```python
-import pydidery.lib.otping as otp
-import pydidery.lib.generating as gen
+import diderypy.lib.otping as otp
+import diderypy.lib.generating as gen
 
 # generate a did for the data
 vk, sk, did = gen.keyGen()
@@ -71,8 +71,8 @@ putOtpBlob sends an updated otp encrypted blob to the didery servers. putOtpBlob
 
 #### Example
 ```python
-import pydidery.lib.otping as otp
-import pydidery.lib.generating as gen
+import diderypy.lib.otping as otp
+import diderypy.lib.generating as gen
 
 # make sure there is already data on the server for our did 
 vk, sk, did = gen.keyGen()
@@ -136,8 +136,8 @@ getOtpBlob accepts a W3C decentralized identifier([DID](https://w3c-ccg.github.i
 
 #### Example
 ```python
-import pydidery.lib.otping as otp
-import pydidery.lib.generating as gen
+import diderypy.lib.otping as otp
+import diderypy.lib.generating as gen
 
 # generate a did for the data
 vk, sk, did = gen.keyGen()
@@ -187,8 +187,8 @@ For GDPR compliance a delete method is provided.  For security reasons the data 
 
 #### Example
 ```python
-import pydidery.lib.otping as otp
-import pydidery.lib.generating as gen
+import diderypy.lib.otping as otp
+import diderypy.lib.generating as gen
 
 # generate a did for the data
 vk, sk, did = gen.keyGen()

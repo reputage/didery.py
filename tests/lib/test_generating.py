@@ -1,8 +1,8 @@
 import libnacl
 
-from pydidery.lib import generating as gen
-from pydidery.lib import didering
-from pydidery.help import signing as sign
+from diderypy.lib import generating as gen
+from diderypy.lib import didering
+from diderypy.help import signing as sign
 
 
 def testDidGen():

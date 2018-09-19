@@ -12,8 +12,8 @@ postHistory accepts a didery rotation history, a signing/private key, and a list
 
 #### Example
 ```python
-import pydidery.lib.historying as hist
-import pydidery.lib.generating as gen
+import diderypy.lib.historying as hist
+import diderypy.lib.generating as gen
 
 # generate the rotation history
 history, vk, sk, pvk, psk = gen.historyGen()
@@ -75,8 +75,8 @@ putHistory sends a rotation event to the didery servers where they verify and st
 
 #### Example
 ```python
-import pydidery.lib.historying as hist
-import pydidery.lib.generating as gen
+import diderypy.lib.historying as hist
+import diderypy.lib.generating as gen
 
 # rotation history must already exist before sending the put request
 history, vk, sk, pvk, psk = gen.historyGen()
@@ -154,8 +154,8 @@ getHistory accepts a W3C decentralized identifier([DID](https://w3c-ccg.github.i
 
 #### Example
 ```python
-import pydidery.lib.historying as hist
-import pydidery.lib.generating as gen
+import diderypy.lib.historying as hist
+import diderypy.lib.generating as gen
 
 # generate the rotation history
 history, vk, sk, pvk, psk = gen.historyGen()
@@ -206,8 +206,8 @@ For GDPR compliance a delete method is provided.  For security reasons the data 
 
 #### Example
 ```python
-import pydidery.lib.historying as hist
-import pydidery.lib.generating as gen
+import diderypy.lib.historying as hist
+import diderypy.lib.generating as gen
 
 # generate the rotation history
 history, vk, sk, pvk, psk = gen.historyGen()

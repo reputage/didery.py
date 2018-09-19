@@ -91,14 +91,14 @@ class optional_build_ext(build_ext):
 
 
 setup(
-    name='py-didery',
-    version='0.0.1',
+    name='diderypy',
+    version='0.0.2',
     license='Apache2',
-    description='didery communication library',
-    long_description="Python library and cli for communicating with didery servers.",
+    description='SDK for working with Didery servers',
+    long_description="Python library and cli for communicating with distributed didery servers.",
     author='Nicholas Telfer',
     author_email='nick.telfer@consensys.net',
-    url='https://github.com/reputage/py-didery',
+    url='https://github.com/reputage/didery.py',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
@@ -106,12 +106,11 @@ setup(
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache2 License',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: Unix',
         'Operating System :: POSIX',
-        'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
@@ -134,7 +133,7 @@ setup(
     ] if Cython else [],
     entry_points={
         'console_scripts': [
-            'didery=pydidery.cli:main',
+            'didery=diderypy.cli:main',
         ]
     },
     cmdclass={'build_ext': optional_build_ext},

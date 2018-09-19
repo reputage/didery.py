@@ -5,8 +5,8 @@ except ImportError:
     import json
 
 from click.testing import CliRunner
-from pydidery.cli import main
-from pydidery.lib import generating as gen
+from diderypy.cli import main
+from diderypy.lib import generating as gen
 
 
 def parsOutput(data):

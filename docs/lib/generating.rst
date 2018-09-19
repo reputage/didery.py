@@ -20,7 +20,7 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.generating as gen
+    import diderypy.lib.generating as gen
 
 
     vk = b'\xfdv\xae\xeb\xe7\x08Q\xaf\xedY\xcf\x8b"\xfc\xa6\xeb\x1c@\x89}\xdb\xed\x16\xa5\xb6\x88\x18\xc8\x1a%O\x83'
@@ -52,7 +52,7 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.generating as gen
+    import diderypy.lib.generating as gen
 
 
     key64u = "nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
@@ -87,7 +87,7 @@ Example
 .. code:: python
 
     import libnacl
-    import pydidery.lib.generating as gen
+    import diderypy.lib.generating as gen
 
 
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
@@ -138,7 +138,7 @@ Example
 .. code:: python
 
     import libnacl
-    import pydidery.lib.generating as gen
+    import diderypy.lib.generating as gen
 
     seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
 

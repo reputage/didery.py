@@ -1,8 +1,8 @@
 import pytest
 
-from pydidery.lib import history_eventing as event
-from pydidery.lib import generating as gen
-from pydidery.lib import historying as hist
+from diderypy.lib import history_eventing as event
+from diderypy.lib import generating as gen
+from diderypy.lib import historying as hist
 
 
 history, vk1, sk1, vk2, sk2 = gen.historyGen()

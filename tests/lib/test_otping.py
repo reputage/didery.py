@@ -9,8 +9,8 @@ from ioflo.aio.http import Valet
 
 # import didery.routing
 
-from pydidery.lib import generating as gen
-from pydidery.lib import otping as otp
+from diderypy.lib import generating as gen
+from diderypy.lib import otping as otp
 
 vk, sk, did = gen.keyGen()
 otpData = {

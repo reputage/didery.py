@@ -23,8 +23,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.historying as hist
-    import pydidery.lib.generating as gen
+    import diderypy.lib.historying as hist
+    import diderypy.lib.generating as gen
 
     # generate the rotation history
     history, vk, sk, pvk, psk = gen.historyGen()
@@ -97,8 +97,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.historying as hist
-    import pydidery.lib.generating as gen
+    import diderypy.lib.historying as hist
+    import diderypy.lib.generating as gen
 
     # rotation history must already exist before sending the put request
     history, vk, sk, pvk, psk = gen.historyGen()
@@ -190,8 +190,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.historying as hist
-    import pydidery.lib.generating as gen
+    import diderypy.lib.historying as hist
+    import diderypy.lib.generating as gen
 
     # generate the rotation history
     history, vk, sk, pvk, psk = gen.historyGen()
@@ -251,8 +251,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.historying as hist
-    import pydidery.lib.generating as gen
+    import diderypy.lib.historying as hist
+    import diderypy.lib.generating as gen
 
     # generate the rotation history
     history, vk, sk, pvk, psk = gen.historyGen()

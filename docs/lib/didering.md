@@ -12,7 +12,7 @@ didGen accepts an EdDSA (Ed25519) key in the form of a byte string and returns a
 
 #### Example
 ```python
-import pydidery.lib.didering as did
+import diderypy.lib.didering as did
 
 
 vk = b'\xfdv\xae\xeb\xe7\x08Q\xaf\xedY\xcf\x8b"\xfc\xa6\xeb\x1c@\x89}\xdb\xed\x16\xa5\xb6\x88\x18\xc8\x1a%O\x83'
@@ -43,7 +43,7 @@ didGen accepts a url-file safe base64 key in the form of a string and returns a 
 
 #### Example
 ```python
-import pydidery.lib.didering as did
+import diderypy.lib.didering as did
 
 
 vk = "nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
@@ -73,7 +73,7 @@ extractDidParts parses and returns a tuple containing the prefix method and key 
 
 #### Example
 ```python
-import pydidery.lib.didering as did
+import diderypy.lib.didering as did
 
 
 did1 = "did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
@@ -103,7 +103,7 @@ validateDid accepts a [W3C DID](https://w3c-ccg.github.io/did-spec/) string and 
 
 #### Example
 ```python
-import pydidery.lib.didering as did
+import diderypy.lib.didering as did
 
 
 did1 = "did:dad:nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="

@@ -9,4 +9,4 @@ import importlib
 _modules = ['behaving', ]
 
 for m in _modules:
-    importlib.import_module(".{0}".format(m), package='pydidery.core')
+    importlib.import_module(".{0}".format(m), package='diderypy.core')

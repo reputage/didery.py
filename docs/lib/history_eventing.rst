@@ -34,9 +34,9 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.history_eventing as events
-    import pydidery.lib.historying as hist
-    import pydidery.lib.generating as gen
+    import diderypy.lib.history_eventing as events
+    import diderypy.lib.historying as hist
+    import diderypy.lib.generating as gen
 
     # rotation history must already exist before sending the put request
     history, vk, sk, pvk, psk = gen.historyGen()

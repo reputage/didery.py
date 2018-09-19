@@ -26,8 +26,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.otping as otp
-    import pydidery.lib.generating as gen
+    import diderypy.lib.otping as otp
+    import diderypy.lib.generating as gen
 
     # generate a did for the data
     vk, sk, did = gen.keyGen()
@@ -95,8 +95,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.otping as otp
-    import pydidery.lib.generating as gen
+    import diderypy.lib.otping as otp
+    import diderypy.lib.generating as gen
 
     # make sure there is already data on the server for our did 
     vk, sk, did = gen.keyGen()
@@ -174,8 +174,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.otping as otp
-    import pydidery.lib.generating as gen
+    import diderypy.lib.otping as otp
+    import diderypy.lib.generating as gen
 
     # generate a did for the data
     vk, sk, did = gen.keyGen()
@@ -236,8 +236,8 @@ Example
 
 .. code:: python
 
-    import pydidery.lib.otping as otp
-    import pydidery.lib.generating as gen
+    import diderypy.lib.otping as otp
+    import diderypy.lib.generating as gen
 
     # generate a did for the data
     vk, sk, did = gen.keyGen()

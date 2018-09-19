@@ -20,7 +20,7 @@ Importing
 
 .. code:: python
 
-    import pydidery.lib as lib
+    import diderypy.lib as lib
 
     vk, sk, = lib.generating.keyGen()
 

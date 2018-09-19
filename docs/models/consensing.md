@@ -22,7 +22,7 @@ The ConsensusResult object has a few static attributes to identify the result of
 
 #### Example Usage
 ```python
-from pydidery.models.consensing import ConsensusResult
+from diderypy.models.consensing import ConsensusResult
 
 # setup the result object
 result = ConsensusResult("http://localhost:8080", ConsensusResult.VALID)

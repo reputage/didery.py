@@ -1,7 +1,7 @@
 import base64
 import libnacl
 
-import pydidery.lib.didering as didering
+import diderypy.lib.didering as didering
 
 """
 This module provides various key generation and manipulation functions for use with the didery server.  

@@ -3,9 +3,9 @@ try:
 except ImportError:
     import json
 
-from pydidery.help import signing
-from pydidery.lib import generating as gen
-from pydidery.models import responding as resp
+from diderypy.help import signing
+from diderypy.lib import generating as gen
+from diderypy.models import responding as resp
 
 
 HISTORY = 0

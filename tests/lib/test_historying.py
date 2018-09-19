@@ -9,9 +9,9 @@ from ioflo.aio.http import Valet
 
 # import didery.routing
 
-from pydidery.help import helping as h
-from pydidery.lib import generating as gen
-from pydidery.lib import historying as hist
+from diderypy.help import helping as h
+from diderypy.lib import generating as gen
+from diderypy.lib import historying as hist
 
 history, vk1, sk1, vk2, sk2 = gen.historyGen()
 vk3, sk3, did3 = gen.keyGen()

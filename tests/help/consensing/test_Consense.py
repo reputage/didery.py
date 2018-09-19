@@ -1,4 +1,4 @@
-from pydidery.help import consensing
+from diderypy.help import consensing
 from tests.data import history_data_builder as builder
 
 

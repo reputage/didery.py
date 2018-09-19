@@ -1,6 +1,6 @@
 import pytest
 
-from pydidery.lib import didering
+from diderypy.lib import didering
 
 
 def testDidGenWithNone():

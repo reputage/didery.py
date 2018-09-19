@@ -12,7 +12,7 @@ keyToKey64u allows you to convert a key from a byte string to a base64 url-file 
 
 #### Example
 ```python
-import pydidery.lib.generating as gen
+import diderypy.lib.generating as gen
 
 
 vk = b'\xfdv\xae\xeb\xe7\x08Q\xaf\xedY\xcf\x8b"\xfc\xa6\xeb\x1c@\x89}\xdb\xed\x16\xa5\xb6\x88\x18\xc8\x1a%O\x83'
@@ -37,7 +37,7 @@ key64uToKey allows you to convert a base64 url-file safe key string to a byte st
 
 #### Example
 ```python
-import pydidery.lib.generating as gen
+import diderypy.lib.generating as gen
 
 
 key64u = "nxESHveBmK9RsEkgaZi-cNPvW0zO-ujOWEW7oKb7EYI="
@@ -63,7 +63,7 @@ keyGen generates a url-file safe base64 public private key pair. If a seed is no
 #### Example
 ```python
 import libnacl
-import pydidery.lib.generating as gen
+import diderypy.lib.generating as gen
 
 
 seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
@@ -107,7 +107,7 @@ historyGen generates a new key history dictionary and returns the history along 
 #### Example
 ```python
 import libnacl
-import pydidery.lib.generating as gen
+import diderypy.lib.generating as gen
 
 seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
 

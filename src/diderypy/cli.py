@@ -390,23 +390,19 @@ def eventsSetup(config, did):
 
 
 def historyInit():
-    history, vk, sk, pvk, psk = gen.historyGen()
+    didBoxInit = gen.DidBox()
+    didBoxRot = gen.DidBox()
+    history, vk, sk, pvk, psk = gen.historyGen(didBoxInit.seed, didBoxRot.seed)
 
-    with open('didery.keys.json', 'w') as keyFile:
-        keys = {
-            "current_sk": sk,
-            "current_vk": vk,
-            "pre_rotated_sk": psk,
-            "pre_rotated_vk": pvk
-        }
+    didBoxInit.save64("./didery.keys.initial")
+    didBoxRot.save64("./didery.keys.rotation")
 
-        keyFile.write(json.dumps(keys, encoding='utf-8'))
-
-    click.prompt('\nKeys generated in ./didery.keys.json. \n'
+    click.prompt('\nKeys generated in ./didery.keys.initial and ./didery.keys.rotation. \n'
                  'Make a copy and store them securely. \n\n'
                  'The file will be deleted after pressing any key+Enter')
 
-    os.remove('didery.keys.json')
+    os.remove("./didery.keys.initial")
+    os.remove("./didery.keys.rotation")
 
     click.echo('didery.keys.json deleted.')
 
@@ -414,15 +410,9 @@ def historyInit():
 
 
 def keyery():
-    vk, sk, did = gen.keyGen()
+    didBox = gen.DidBox()
 
-    with open('didery.keys.json', 'w') as keyFile:
-        keys = {
-            "signing_key": sk,
-            "verification_key": vk
-        }
-
-        keyFile.write(json.dumps(keys, encoding='utf-8'))
+    didBox.save64("./didery.keys.json")
 
     click.prompt('\nKeys generated in ./didery.keys.json. \n'
                  'Make a copy and store them securely. \n\n'
@@ -432,4 +422,4 @@ def keyery():
 
     click.echo('didery.keys.json deleted.')
 
-    return vk, sk
+    return didBox.base64_vk(), didBox.base64_sk()

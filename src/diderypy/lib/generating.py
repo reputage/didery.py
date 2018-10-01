@@ -1,5 +1,8 @@
 import base64
 import libnacl
+import libnacl.base
+import stat
+import os
 
 import diderypy.lib.didering as didering
 
@@ -54,21 +57,22 @@ def keyGen(seed=None):
     return keyToKey64u(vk), keyToKey64u(sk), did
 
 
-def historyGen(seed=None):
+def historyGen(initial_key_pair_seed=None, rotation_key_pair_seed=None):
     """
     historyGen generates a new key history dictionary and returns the
     history along with all generated keys. If a seed is not provided
     libnacl's randombytes() function will be used to generate a seed.
 
-    :param seed: The seed value used during key generation.
+    :param initial_key_pair_seed: The seed value used during key generation for the initial key pair.
+    :param rotation_key_pair_seed: The seed value used during key generation for the pre-rotated key pair.
     :return: a history dictionary with an "id", "signer" and "signers" field,
              url-file safe base64 verifier/public key string,
              url-file safe base64 signing/private key,
              url-file safe base64 pre-rotated verifier/public key,
              url-file safe base64 pre-rotated signing/private key
     """
-    vk, sk, did = keyGen(seed)
-    pre_rotated_vk, pre_rotated_sk, did = keyGen(seed)
+    vk, sk, did = keyGen(initial_key_pair_seed)
+    pre_rotated_vk, pre_rotated_sk, did = keyGen(rotation_key_pair_seed)
 
     history = {
         "id": didering.didGen64(vk),
@@ -80,3 +84,95 @@ def historyGen(seed=None):
     }
 
     return history, vk, sk, pre_rotated_vk, pre_rotated_sk
+
+
+class DidBox(libnacl.base.BaseKey):
+    crypto_didbox_SKBYTES = 64
+    crypto_didbox_VKBYTES = 32
+
+    def __init__(self, seed=None, sk=None, vk=None, did=None):
+        if (sk is None and vk) or (sk and vk is None):
+            raise ValueError('Both private and public keys required')
+
+        if did and sk is None and vk is None:
+            raise ValueError('Keys required with did')
+
+        if sk and len(sk) != DidBox.crypto_didbox_SKBYTES or vk and len(vk) != DidBox.crypto_didbox_VKBYTES:
+            raise ValueError('Invalid key')
+
+        if sk is None and vk is None and seed is None:
+            seed = libnacl.randombytes(libnacl.crypto_sign_SEEDBYTES)
+
+            vk, sk = libnacl.crypto_sign_seed_keypair(seed)
+
+            did = didering.didGen(vk)
+
+        if seed and sk is None and vk is None:
+            vk, sk = libnacl.crypto_sign_seed_keypair(seed)
+
+            did = didering.didGen(vk)
+
+        if sk and vk and did is None:
+            did = didering.didGen(vk)
+
+        self.seed = seed
+        self.sk = sk
+        self.vk = vk
+        self.did = did
+
+    def base64_vk(self):
+        return keyToKey64u(self.vk)
+
+    def base64_sk(self):
+        return keyToKey64u(self.sk)
+
+    def base64_seed(self):
+        return keyToKey64u(self.seed)
+
+    def for_json64(self):
+        '''
+        Return a dictionary of the secret values we need to store.
+        '''
+        pre = {}
+        sk = self.base64_sk()
+        vk = self.base64_vk()
+        seed = self.base64_seed()
+        if sk:
+            pre['priv'] = sk
+        if vk:
+            pre['verify'] = vk
+        if seed:
+            pre['sign'] = seed
+
+        return pre
+
+    def save64(self, path, serial='json'):
+        '''
+        Safely save keys with perms of 0400
+        '''
+        pre = self.for_json64()
+
+        if serial == 'msgpack':
+            import msgpack
+            packaged = msgpack.dumps(pre)
+        elif serial == 'json':
+            import json
+            packaged = json.dumps(pre)
+
+        perm_other = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        perm_group = stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
+
+        cumask = os.umask(perm_other | perm_group)
+        with open(path, 'w+') as fp_:
+            fp_.write(packaged)
+        os.umask(cumask)
+
+    def open(self, path):
+        if not os.path.exists(path):
+            raise FileNotFoundError("File does not exist")
+        else:
+            if (os.stat(path).st_mode & 0o777) != 0o600:
+                raise PermissionError("Insecure key file permissions!")
+            with open(path, 'r') as fp_:
+                key = fp_.readline()
+        return key

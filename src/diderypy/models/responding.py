@@ -22,19 +22,22 @@ def responseFactory(url, status, data):
              HistoryData object, OtpData object, or a dict of HistoryData objects
              depending on if you passed rotation history data, otp encrypted blob data, or events data.
     """
-    if "history" in data or ("deleted" in data and "history" in data["deleted"]):
-        response = HistoryData(data)
-    elif "otp_data" in data or ("deleted" in data and "otp_data" in data["deleted"]):
-        response = OtpData(data)
-    elif status == 200 and data and "event" in data[0]:
-        response = {}
-        for datum in data:
-            key = str(datum["event"]["signer"])
-            event = {
-                "history": datum["event"],
-                "signatures": datum["signatures"]
-            }
-            response[key] = HistoryData(event)
+    if data:
+        if "history" in data or ("deleted" in data and "history" in data["deleted"]):
+            response = HistoryData(data)
+        elif "otp_data" in data or ("deleted" in data and "otp_data" in data["deleted"]):
+            response = OtpData(data)
+        elif status == 200 and "event" in data[0]:
+            response = {}
+            for datum in data:
+                key = str(datum["event"]["signer"])
+                event = {
+                    "history": datum["event"],
+                    "signatures": datum["signatures"]
+                }
+                response[key] = HistoryData(event)
+        else:
+            response = AbstractDideryData(data)
     else:
         response = AbstractDideryData(data)
 

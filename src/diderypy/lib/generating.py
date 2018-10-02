@@ -130,9 +130,9 @@ class DidBox(libnacl.base.BaseKey):
         return keyToKey64u(self.seed)
 
     def for_json64(self):
-        '''
+        """
         Return a dictionary of the secret values we need to store.
-        '''
+        """
         pre = {}
         sk = self.base64_sk()
         vk = self.base64_vk()
@@ -142,14 +142,14 @@ class DidBox(libnacl.base.BaseKey):
         if vk:
             pre['verify'] = vk
         if seed:
-            pre['sign'] = seed
+            pre['seed'] = seed
 
         return pre
 
-    def save64(self, path, serial='json'):
-        '''
+    def save64(self, path, serial='simplejson'):
+        """
         Safely save keys with perms of 0400
-        '''
+        """
         pre = self.for_json64()
 
         if serial == 'msgpack':
@@ -158,6 +158,14 @@ class DidBox(libnacl.base.BaseKey):
         elif serial == 'json':
             import json
             packaged = json.dumps(pre)
+        elif serial == 'simplejson':
+            try:
+                import simplejson as json
+            except ImportError:
+                import json
+            packaged = json.dumps(pre)
+        else:
+            raise ValueError("Serialization method not recognized.")
 
         perm_other = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         perm_group = stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
@@ -168,10 +176,13 @@ class DidBox(libnacl.base.BaseKey):
         os.umask(cumask)
 
     def open(self, path):
+        """
+        Safely read keys with perms of 0400
+        """
         if not os.path.exists(path):
             raise FileNotFoundError("File does not exist")
         else:
-            if (os.stat(path).st_mode & 0o777) != 0o600:
+            if (os.stat(path).st_mode & 0o777) != 0o400:
                 raise PermissionError("Insecure key file permissions!")
             with open(path, 'r') as fp_:
                 key = fp_.readline()

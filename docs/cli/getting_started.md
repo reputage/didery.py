@@ -17,22 +17,23 @@ $ didery --help
 Usage: didery [OPTIONS] CONFIG
 
 Options:
-  -i, --incept    Send a key rotation history inception event.
-  -u, --upload    Upload a new otp encrypted private key.
-  -r, --rotate    Rotate public/private key pairs.
-  -U, --update    Update otp encrypted private key.
-  -R, --retrieve  Retrieve key rotation history.
-  -d, --download  Download otp encrypted private key.
-  -D, --delete    Delete rotation history.
-  -m, --remove    Remove otp encrypted private key.
-  -e, --events    Pull a record of all history rotation events for a specified
-                  did.
-  -v              Verbosity of console output. There are 5 verbosity levels
-                  from '' to '-vvvv.'
-  -M, --mute      Mute all console output except prompts.
-  --data PATH     Path to the data file.
-  --did TEXT      decentralized identifier(did).
-  --help          Show this message and exit.
+  -i, --incept      Send a key rotation history inception event.
+  -u, --upload      Upload a new otp encrypted private key.
+  -r, --rotate      Rotate public/private key pairs.
+  -U, --update      Update otp encrypted private key.
+  -R, --retrieve    Retrieve key rotation history.
+  -d, --download    Download otp encrypted private key.
+  -D, --delete      Delete rotation history.
+  -m, --remove      Remove otp encrypted private key.
+  -e, --events      Pull a record of all history rotation events for a
+                    specified did.
+  -v                Verbosity of console output. There are 5 verbosity levels
+                    from '' to '-vvvv.'
+  -M, --mute        Mute all console output except prompts.
+  --data PATH       Path to the data file.
+  --did TEXT        decentralized identifier(did).
+  --save DIRECTORY  Directory to store generated key files in.
+  --help            Show this message and exit.
 ```
 
 ### Config File

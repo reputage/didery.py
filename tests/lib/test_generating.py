@@ -374,7 +374,7 @@ def testDidBoxFor_json64():
     exp = {
         "priv": 'YYqziW-vxTDxJOJ56uE82Ed7m0VFvfTnX9-Ws0Sf4LYpyABpIKabs4BDadGWXQVOKmKWenpuZxLkDkjJOgrW5Q==',
         "verify": 'KcgAaSCmm7OAQ2nRll0FTipilnp6bmcS5A5IyToK1uU=',
-        "sign": 'YYqziW-vxTDxJOJ56uE82Ed7m0VFvfTnX9-Ws0Sf4LY='
+        "seed": 'YYqziW-vxTDxJOJ56uE82Ed7m0VFvfTnX9-Ws0Sf4LY='
     }
 
     assert exp == didBox.for_json64()

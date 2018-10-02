@@ -130,11 +130,17 @@ Command line interface for didery.py library.  Path to config file containing se
     multiple=False,
     help="decentralized identifier(did)."
 )
+@click.option(
+    '--save',
+    multiple=False,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True, resolve_path=True),
+    help="Directory to store generated key files in."
+)
 @click.argument(
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, mute, data, did, config):
+def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, mute, data, did, save, config):
     if mute:
         verbose = 0
     else:
@@ -180,13 +186,13 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
 
     try:
         if incept:
-            preloads.extend(inceptSetup(configData, data))
+            preloads.extend(inceptSetup(configData, data, save))
 
         if upload:
             preloads.extend(uploadSetup(configData, data))
 
         if rotate:
-            preloads.extend(rotateSetup(configData, data))
+            preloads.extend(rotateSetup(configData, data, save))
 
         if update:
             preloads.extend(updateSetup(configData, data))
@@ -235,9 +241,9 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
                         preloads=preloads)
 
 
-def inceptSetup(config, data):
+def inceptSetup(config, data, path):
     if data is None:
-        history, sk = historyInit()
+        history, sk = historyInit(path)
         data = history
     else:
         data = h.parseDataFile(data, "history")
@@ -270,7 +276,7 @@ def uploadSetup(config, data):
     return preloads
 
 
-def rotateSetup(config, data):
+def rotateSetup(config, data, path):
     if data is None:
         raise ValueError("Data file required. Use --data=path/to/file")
 
@@ -280,7 +286,7 @@ def rotateSetup(config, data):
     rsk = click.prompt("Enter your pre-rotated signing/private key")
 
     if click.confirm("Generate a new pre-rotated key pair?"):
-        pvk, psk = keyery()
+        pvk, psk = keyery(path)
         data["signers"].append(pvk)
         data["signer"] = int(data["signer"]) + 1
 
@@ -389,37 +395,76 @@ def eventsSetup(config, did):
     return preloads
 
 
-def historyInit():
+def historyInit(directory):
     didBoxInit = gen.DidBox()
     didBoxRot = gen.DidBox()
     history, vk, sk, pvk, psk = gen.historyGen(didBoxInit.seed, didBoxRot.seed)
 
-    didBoxInit.save64("./didery.keys.initial")
-    didBoxRot.save64("./didery.keys.rotation")
+    if directory is None:
+        init_path = "./didery_keys_initial.json"
+        rot_path = "./didery_keys_rotation.json"
+    else:
+        init_path = os.path.join(directory, "didery_keys_initial.json")
+        rot_path = os.path.join(directory, "didery_keys_rotation.json")
+        click.echo('Saving initial key pair to {}'.format(init_path))
+        click.echo('Saving pre-rotated key pair to {}'.format(rot_path))
 
-    click.prompt('\nKeys generated in ./didery.keys.initial and ./didery.keys.rotation. \n'
-                 'Make a copy and store them securely. \n\n'
-                 'The file will be deleted after pressing any key+Enter')
+    didBoxInit.save64(init_path)
+    didBoxRot.save64(rot_path)
 
-    os.remove("./didery.keys.initial")
-    os.remove("./didery.keys.rotation")
+    if directory is None:
+        try:
+            click.prompt('\nKeys generated in: '
+                         ''
+                         '\n\n./didery_keys_initial.json\n'
+                         './didery_keys_rotation.json\n\n'
+                         ''
+                         'Make a copy and store them securely. \n'
+                         'The file will be deleted after pressing any key+Enter')
 
-    click.echo('didery.keys.json deleted.')
+            os.remove("./didery_keys_initial.json")
+            os.remove("./didery_keys_rotation.json")
+
+            click.echo('Key files deleted.')
+        except KeyboardInterrupt as ex:
+            if os.path.exists("./didery_keys_initial.json"):
+                os.remove("./didery_keys_initial.json")
+            if os.path.exists("./didery_keys_rotation.json"):
+                os.remove("./didery_keys_rotation.json")
+
+            click.echo('Key files deleted.')
+            raise
 
     return history, sk
 
 
-def keyery():
+def keyery(directory):
     didBox = gen.DidBox()
 
-    didBox.save64("./didery.keys.json")
+    if directory is None:
+        path = "./didery_keys.json"
+    else:
+        path = os.path.join(directory, "didery_keys.json")
+        click.echo('Saving new key pair to {}'.format(path))
 
-    click.prompt('\nKeys generated in ./didery.keys.json. \n'
-                 'Make a copy and store them securely. \n\n'
-                 'The file will be deleted after pressing any key+Enter')
+    didBox.save64(path)
 
-    os.remove('didery.keys.json')
+    if directory is None:
+        try:
+            click.prompt('\nKeys generated in: '
+                         ''
+                         '\n\n./didery_keys.json\n\n'
+                         ''
+                         'Make a copy and store them securely. \n'
+                         'The file will be deleted after pressing any key+Enter')
 
-    click.echo('didery.keys.json deleted.')
+            os.remove('didery_keys.json')
+
+            click.echo('Key files deleted.')
+        except KeyboardInterrupt as ex:
+            if os.path.exists("./didery_keys.json"):
+                os.remove("./didery_keys.json")
+                click.echo('Key file deleted.')
+            raise
 
     return didBox.base64_vk(), didBox.base64_sk()

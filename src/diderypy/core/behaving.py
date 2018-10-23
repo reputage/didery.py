@@ -16,13 +16,13 @@ from ..lib import history_eventing as event
 
 def outputSetupInfo(console, servers, data=None, did=None):
     console.terse("\n")
-    console.concise("Servers:\n{}\n\n".format(servers))
+    console.concise("Servers:\n{}\n\n".format(json.dumps(servers, indent=4)))
 
     if data:
         console.profuse("Data:\n{}\n\n".format(data))
 
     if did:
-        console.profuse("DID: {}\n\n".format(did))
+        console.profuse("Retrieving DID:\t\t{}\n\n".format(did))
 
 
 def outputPushedResult(result, console, verbosity):
@@ -32,14 +32,21 @@ def outputPushedResult(result, console, verbosity):
 
     for url, data in result.items():
         parsed_url = urlparse(url)
+        f_url = "{}://{}:".format(parsed_url.scheme, parsed_url.netloc).ljust(34)
         if verbosity == console.Wordage.profuse:
-            profuse += "{}://{}:\t{}\n".format(parsed_url.scheme, parsed_url.netloc, data)
+            if data.status < 400 and data.status != 0:
+                profuse += "{} status: {}\t{}\n".format(f_url, repr(data.status).ljust(9), data.response)
+            else:
+                if data.status == 0:
+                    profuse += "{} status: Timed Out\n".format(f_url)
+                else:
+                    profuse += "{} status: {}\n".format(f_url, repr(data.status).ljust(9))
 
         if verbosity == console.Wordage.concise:
             if data.status == 0:
-                concise += "{}://{}:\tRequest Timed Out\n".format(parsed_url.scheme, parsed_url.netloc)
+                concise += "{} status: Timed Out\n".format(f_url)
             else:
-                concise += "{}://{}:\tHTTP_{}\n".format(parsed_url.scheme, parsed_url.netloc, data.status)
+                concise += "{} status: HTTP_{}\n".format(f_url, repr(data.status).ljust(2))
 
         if 300 > data.status >= 200:
             successful += 1
@@ -58,7 +65,7 @@ def outputPulledResult(data, results, console):
         for url, result in results.items():
             console.verbose("{}\n".format(result))
     else:
-        console.terse("Consensus Failed.\n")
+        console.terse("Consensus Failed.\n\n")
 
         for url, result in results.items():
             console.concise("{}\n".format(result))

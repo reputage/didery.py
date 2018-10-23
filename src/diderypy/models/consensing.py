@@ -32,7 +32,7 @@ class ConsensusResult:
 
     def __str__(self):
         url = urlparse(self.url)
-        str_rep = "{}://{}:\t".format(url.scheme, url.netloc)
+        str_rep = "{}://{}: ".format(url.scheme, url.netloc).ljust(34)
 
         if self.validation_status == ConsensusResult.TIMEOUT:
             str_rep += "Request Timed Out"

@@ -92,7 +92,7 @@ class optional_build_ext(build_ext):
 
 setup(
     name='diderypy',
-    version='0.0.3',
+    version='0.1.0',
     license='Apache2',
     description='SDK for working with Didery servers',
     long_description="Python library and cli for communicating with distributed didery servers.",

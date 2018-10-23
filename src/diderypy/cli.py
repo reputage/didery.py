@@ -136,11 +136,18 @@ Command line interface for didery.py library.  Path to config file containing se
     type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True, resolve_path=True),
     help="Directory to store generated key files in."
 )
+@click.option(
+    '--keys',
+    multiple=True,
+    default=None,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
+    help="File(s) where keys are stored in a json format"
+)
 @click.argument(
     'config',
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True, resolve_path=True),
 )
-def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, mute, data, did, save, config):
+def main(incept, upload, rotate, update, retrieve, download, delete, remove, events, v, mute, data, did, save, keys, config):
     if mute:
         verbose = 0
     else:
@@ -184,18 +191,20 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
         click.echo("Error parsing the config file: {}.".format(err))
         return
 
+
+
     try:
         if incept:
-            preloads.extend(inceptSetup(configData, data, save))
+            preloads.extend(inceptSetup(configData, data, save, keys))
 
         if upload:
-            preloads.extend(uploadSetup(configData, data))
+            preloads.extend(uploadSetup(configData, data, keys))
 
         if rotate:
-            preloads.extend(rotateSetup(configData, data, save))
+            preloads.extend(rotateSetup(configData, data, save, keys))
 
         if update:
-            preloads.extend(updateSetup(configData, data))
+            preloads.extend(updateSetup(configData, data, keys))
 
         if retrieve:
             preloads.extend(retrieveSetup(configData, did))
@@ -204,10 +213,10 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
             preloads.extend(downloadSetup(configData, did))
 
         if delete:
-            preloads.extend(deleteSetup(configData, did))
+            preloads.extend(deleteSetup(configData, did, keys))
 
         if remove:
-            preloads.extend(removeSetup(configData, did))
+            preloads.extend(removeSetup(configData, did, keys))
 
         if events:
             preloads.extend(eventsSetup(configData, did))
@@ -241,14 +250,18 @@ def main(incept, upload, rotate, update, retrieve, download, delete, remove, eve
                         preloads=preloads)
 
 
-def inceptSetup(config, data, path):
+def inceptSetup(config, data, path, key_paths):
+
     if data is None:
+        if key_paths:
+            click.echo("\nWARN: Key file will not be used unless a data file is provided with --data.\n")
         history, sk = historyInit(path)
         data = history
     else:
         data = h.parseDataFile(data, "history")
 
-        sk = click.prompt("Enter your signing/private key")
+        keys = getSigningKeys(key_paths)
+        sk = keys[0]
 
     preloads = [
         ('.main.incept.servers', odict(value=config["servers"])),
@@ -259,13 +272,14 @@ def inceptSetup(config, data, path):
     return preloads
 
 
-def uploadSetup(config, data):
+def uploadSetup(config, data, key_paths):
     if data is None:
         raise ValueError("Data file required. Use --data=path/to/file")
 
     data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Enter your signing/private key")
+    keys = getSigningKeys(key_paths)
+    sk = keys[0]
 
     preloads = [
         ('.main.upload.servers', odict(value=config["servers"])),
@@ -276,14 +290,13 @@ def uploadSetup(config, data):
     return preloads
 
 
-def rotateSetup(config, data, path):
+def rotateSetup(config, data, path, key_paths):
     if data is None:
         raise ValueError("Data file required. Use --data=path/to/file")
 
     data = h.parseDataFile(data, "history")
 
-    csk = click.prompt("Enter your current signing/private key")
-    rsk = click.prompt("Enter your pre-rotated signing/private key")
+    keys = getSigningKeys(key_paths, 2)
 
     if click.confirm("Generate a new pre-rotated key pair?"):
         pvk, psk = keyery(path)
@@ -294,20 +307,21 @@ def rotateSetup(config, data, path):
         ('.main.rotate.servers', odict(value=config["servers"])),
         ('.main.rotate.data', odict(value=data)),
         ('.main.rotate.did', odict(value=data["id"])),
-        ('.main.rotate.sk', odict(value=csk)),
-        ('.main.rotate.psk', odict(value=rsk))
+        ('.main.rotate.sk', odict(value=keys[0])),
+        ('.main.rotate.psk', odict(value=keys[1]))
     ]
 
     return preloads
 
 
-def updateSetup(config, data):
+def updateSetup(config, data, key_paths):
     if data is None:
         raise ValueError("Data file required. Use --data=path/to/file")
 
     data = h.parseDataFile(data, "otp")
 
-    sk = click.prompt("Enter your signing/private key")
+    keys = getSigningKeys(key_paths)
+    sk = keys[0]
 
     preloads = [
         ('.main.update.servers', odict(value=config["servers"])),
@@ -347,13 +361,14 @@ def downloadSetup(config, did):
     return preloads
 
 
-def deleteSetup(config, did):
+def deleteSetup(config, did, key_paths):
     if did is None:
         raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
-    sk = click.prompt("Enter your signing/private key")
+    keys = getSigningKeys(key_paths)
+    sk = keys[0]
 
     preloads = [
         ('.main.delete.servers', odict(value=config["servers"])),
@@ -364,13 +379,14 @@ def deleteSetup(config, did):
     return preloads
 
 
-def removeSetup(config, did):
+def removeSetup(config, did, key_paths):
     if did is None:
         raise ValueError("did required. Use --did")
 
     h.validateDid(did)
 
-    sk = click.prompt("Enter your signing/private key")
+    keys = getSigningKeys(key_paths)
+    sk = keys[0]
 
     preloads = [
         ('.main.remove.servers', odict(value=config["servers"])),
@@ -442,9 +458,9 @@ def keyery(directory):
     didBox = gen.DidBox()
 
     if directory is None:
-        path = "./didery_keys.json"
+        path = "./didery_prerotated_key.json"
     else:
-        path = os.path.join(directory, "didery_keys.json")
+        path = os.path.join(directory, "didery_prerotated_key.json")
         click.echo('Saving new key pair to {}'.format(path))
 
     didBox.save64(path)
@@ -453,18 +469,40 @@ def keyery(directory):
         try:
             click.prompt('\nKeys generated in: '
                          ''
-                         '\n\n./didery_keys.json\n\n'
+                         '\n\n./didery_prerotated_key.json\n\n'
                          ''
                          'Make a copy and store them securely. \n'
                          'The file will be deleted after pressing any key+Enter')
 
-            os.remove('didery_keys.json')
+            os.remove('didery_prerotated_key.json')
 
             click.echo('Key files deleted.')
         except KeyboardInterrupt as ex:
-            if os.path.exists("./didery_keys.json"):
-                os.remove("./didery_keys.json")
+            if os.path.exists("./didery_prerotated_key.json"):
+                os.remove("./didery_prerotated_key.json")
                 click.echo('Key file deleted.')
             raise
 
     return didBox.base64_vk(), didBox.base64_sk()
+
+
+def getSigningKeys(path=None, keys_to_obtain=1):
+    csk = None
+    psk = None
+
+    if not path:
+        csk = click.prompt("Enter your current signing/private key")
+
+        if keys_to_obtain > 1:
+            psk = click.prompt("Enter your pre-rotated signing/private key")
+    else:
+        keys = gen.DidBox()
+        keys.open(path[0])
+        csk = keys.base64_sk()
+
+        if keys_to_obtain > 1:
+            keys = gen.DidBox()
+            keys.open(path[1])
+            psk = keys.base64_sk()
+
+    return [csk, psk]

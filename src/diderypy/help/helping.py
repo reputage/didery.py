@@ -16,6 +16,7 @@ from ioflo.aid import getConsole
 
 from ..models.responding import responseFactory
 from ..lib.didering import validateDid
+from ..lib.generating import key64uToKey
 
 console = getConsole()
 
@@ -91,6 +92,17 @@ def parseDataFile(file, dtype):
 
     # Check for valid did
     validateDid(data["id"])
+
+    return data
+
+
+def parseKeyFile(file):
+    data = parseJsonFile(file, ["priv"])
+
+    data["priv"] = key64uToKey(data["priv"])
+
+    data["verify"] = key64uToKey(data["verify"]) if "verify" in data else None
+    data["seed"] = key64uToKey(data["seed"]) if "seed" in data else None
 
     return data
 

@@ -5,6 +5,7 @@ import stat
 import os
 
 import diderypy.lib.didering as didering
+from diderypy.help import helping as help
 
 """
 This module provides various key generation and manipulation functions for use with the didery server.  
@@ -177,13 +178,17 @@ class DidBox(libnacl.base.BaseKey):
 
     def open(self, path):
         """
-        Safely read keys with perms of 0400
+        Safely read keys with perms of 0600
         """
         if not os.path.exists(path):
             raise FileNotFoundError("File does not exist")
         else:
-            if (os.stat(path).st_mode & 0o777) != 0o400:
+            if (os.stat(path).st_mode & 0o777) != 0o600:
                 raise PermissionError("Insecure key file permissions!")
-            with open(path, 'r') as fp_:
-                key = fp_.readline()
-        return key
+
+            data = help.parseKeyFile(path)
+
+            self.sk = data['priv']
+            self.vk = data['verify']
+            self.seed = data['seed']
+            self.did = didering.didGen(self.vk)

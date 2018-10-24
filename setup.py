@@ -92,7 +92,7 @@ class optional_build_ext(build_ext):
 
 setup(
     name='diderypy',
-    version='0.1.0',
+    version='0.1.1',
     license='Apache2',
     description='SDK for working with Didery servers',
     long_description="Python library and cli for communicating with distributed didery servers.",
@@ -102,6 +102,9 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    package_data={
+        'diderypy': ['flo/*.flo']
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[

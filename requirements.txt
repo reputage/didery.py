@@ -6,7 +6,7 @@ ioflo==1.7.4
 libnacl==1.6.1
 more-itertools==4.3.0
 pluggy==0.7.1
-py==1.5.4
+py==1.10.0
 pytest==3.7.2
 python-dateutil==2.7.3
 simplejson==3.16.0
